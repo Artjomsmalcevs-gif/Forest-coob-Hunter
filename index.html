@@ -12,15 +12,10 @@ user-scalable=no">
 
 <title>Forest Hunter</title>
 
-<!-- iPhone icon -->
 <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-
-<!-- Browser icon -->
 <link rel="icon" type="image/png" href="icon.png">
 
-<!-- Mobile app mode -->
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Forest Hunter">
 
 <style>
@@ -52,16 +47,15 @@ position:absolute;
 top:15px;
 left:50%;
 transform:translateX(-50%);
-width:120px;
-height:120px;
-border-radius:30px;
-box-shadow:0 0 25px black;
+width:110px;
+height:110px;
+border-radius:25px;
 z-index:200;
 }
 
 #title{
 position:absolute;
-top:145px;
+top:130px;
 left:50%;
 transform:translateX(-50%);
 font-size:38px;
@@ -73,22 +67,22 @@ z-index:200;
 
 #ui{
 position:absolute;
-top:220px;
+top:200px;
 left:15px;
-font-size:24px;
+font-size:22px;
 color:white;
 z-index:200;
 }
 
 #tutorial{
 position:absolute;
-top:220px;
+top:200px;
 right:15px;
-background:rgba(0,0,0,0.55);
+background:rgba(0,0,0,0.5);
 padding:12px;
 border-radius:15px;
 color:white;
-font-size:18px;
+font-size:17px;
 z-index:200;
 }
 
@@ -100,8 +94,8 @@ background:cyan;
 border-radius:15px;
 left:60px;
 top:340px;
-z-index:10;
 box-shadow:0 0 20px cyan;
+z-index:10;
 }
 
 .enemy{
@@ -188,19 +182,6 @@ background:orange;
 font-size:42px;
 }
 
-#download{
-position:absolute;
-top:15px;
-right:15px;
-padding:12px 18px;
-border:none;
-border-radius:15px;
-font-size:18px;
-font-weight:bold;
-background:gold;
-z-index:400;
-}
-
 </style>
 </head>
 
@@ -210,10 +191,6 @@ z-index:400;
 
 <img id="logo" src="icon.png">
 
-<a href="index.html" download>
-<button id="download">DOWNLOAD</button>
-</a>
-
 <div id="title">FOREST HUNTER</div>
 
 <div id="ui">
@@ -222,9 +199,9 @@ KILLS: 0/1
 </div>
 
 <div id="tutorial">
-📱 iPHONE MODE<br>
-⚔️ ATTACK<br>
-🌀 GO TO PORTAL
+💻 W A S D<br>
+📱 TOUCH BUTTONS<br>
+⚔️ SPACE = ATTACK
 </div>
 
 <div id="player"></div>
@@ -460,6 +437,30 @@ document.getElementById("left").ontouchstart=()=>move(-25,0);
 document.getElementById("right").ontouchstart=()=>move(25,0);
 
 document.getElementById("attack").ontouchstart=()=>attack();
+
+document.addEventListener("keydown",(e)=>{
+
+if(e.key==="w" || e.key==="ArrowUp"){
+move(0,-25);
+}
+
+if(e.key==="s" || e.key==="ArrowDown"){
+move(0,25);
+}
+
+if(e.key==="a" || e.key==="ArrowLeft"){
+move(-25,0);
+}
+
+if(e.key==="d" || e.key==="ArrowRight"){
+move(25,0);
+}
+
+if(e.key===" "){
+attack();
+}
+
+});
 
 function enemyAI(){
 
