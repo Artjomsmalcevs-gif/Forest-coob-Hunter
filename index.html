@@ -2,13 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
 content="width=device-width,
 initial-scale=1.0,
 maximum-scale=1.0,
 user-scalable=no">
 
-<title>Forest Hunter Mobile</title>
+<title>Forest Hunter</title>
+
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
 
 <style>
 
@@ -16,8 +20,8 @@ body{
 margin:0;
 overflow:hidden;
 font-family:Arial;
-touch-action:none;
 background:black;
+touch-action:none;
 }
 
 #game{
@@ -27,43 +31,56 @@ height:100vh;
 overflow:hidden;
 
 background:
-linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),
+linear-gradient(rgba(0,0,0,0.25),rgba(0,0,0,0.25)),
 url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop');
 
 background-size:cover;
 background-position:center;
 }
 
-#title{
+#logo{
 position:absolute;
 top:10px;
-left:10px;
-font-size:38px;
+left:50%;
+transform:translateX(-50%);
+width:120px;
+height:120px;
+border-radius:25px;
+box-shadow:0 0 20px black;
+z-index:200;
+}
+
+#title{
+position:absolute;
+top:130px;
+left:50%;
+transform:translateX(-50%);
+font-size:40px;
 font-weight:bold;
 color:lime;
 text-shadow:3px 3px black;
-z-index:100;
+z-index:200;
 }
 
 #ui{
 position:absolute;
-top:70px;
-left:10px;
-font-size:22px;
+top:200px;
+left:15px;
+font-size:24px;
 color:white;
-z-index:100;
+z-index:200;
 }
 
 #tutorial{
 position:absolute;
-top:10px;
-right:10px;
+top:200px;
+right:15px;
 background:rgba(0,0,0,0.5);
-padding:10px;
-border-radius:12px;
+padding:12px;
+border-radius:15px;
 color:white;
-font-size:16px;
-z-index:100;
+font-size:18px;
+z-index:200;
 }
 
 #player{
@@ -73,7 +90,7 @@ height:50px;
 background:cyan;
 border-radius:12px;
 left:60px;
-top:120px;
+top:320px;
 z-index:10;
 box-shadow:0 0 20px cyan;
 }
@@ -93,7 +110,7 @@ width:80px;
 height:80px;
 border-radius:50%;
 background:gold;
-top:80px;
+top:320px;
 right:30px;
 box-shadow:0 0 35px yellow;
 }
@@ -118,7 +135,7 @@ bottom:20px;
 left:0;
 width:100%;
 height:220px;
-z-index:200;
+z-index:300;
 }
 
 .btn{
@@ -165,15 +182,14 @@ font-size:40px;
 #download{
 position:absolute;
 top:10px;
-left:50%;
-transform:translateX(-50%);
-padding:12px 20px;
+right:10px;
+padding:12px 18px;
 border:none;
 border-radius:12px;
-font-size:20px;
+font-size:18px;
 font-weight:bold;
 background:gold;
-z-index:300;
+z-index:400;
 }
 
 </style>
@@ -182,6 +198,8 @@ z-index:300;
 <body>
 
 <div id="game">
+
+<img id="logo" src="icon.png">
 
 <a href="index.html" download>
 <button id="download">DOWNLOAD</button>
@@ -195,9 +213,9 @@ KILLS: 0/1
 </div>
 
 <div id="tutorial">
-📱 MOBILE MODE<br>
+📱 MOBILE GAME<br>
 ⚔️ ATTACK<br>
-🌀 PORTAL
+🌀 GO TO PORTAL
 </div>
 
 <div id="player"></div>
@@ -224,7 +242,7 @@ const player=document.getElementById("player");
 const ui=document.getElementById("ui");
 
 let x=60;
-let y=120;
+let y=320;
 
 let level=1;
 let kills=0;
@@ -247,7 +265,7 @@ let tree=document.createElement("div");
 tree.className="tree";
 
 tree.style.left=random(0,320)+"px";
-tree.style.top=random(120,650)+"px";
+tree.style.top=random(260,700)+"px";
 
 game.appendChild(tree);
 }
@@ -266,7 +284,7 @@ let wall=document.createElement("div");
 wall.className="wall";
 
 let wx=random(50,260);
-let wy=random(150,650);
+let wy=random(300,700);
 
 wall.style.left=wx+"px";
 wall.style.top=wy+"px";
@@ -297,7 +315,7 @@ let enemy=document.createElement("div");
 enemy.className="enemy";
 
 let ex=random(120,320);
-let ey=random(180,650);
+let ey=random(320,700);
 
 enemy.style.left=ex+"px";
 enemy.style.top=ey+"px";
@@ -358,7 +376,7 @@ x=nx;
 y=ny;
 
 if(x<0)x=0;
-if(y<100)y=100;
+if(y<260)y=260;
 
 if(x>window.innerWidth-50)
 x=window.innerWidth-50;
@@ -406,7 +424,7 @@ function checkPortal(){
 
 if(
 x>window.innerWidth-130 &&
-y<180 &&
+y<420 &&
 kills>=level
 ){
 
@@ -415,7 +433,7 @@ if(level<28){
 level++;
 
 x=60;
-y=120;
+y=320;
 
 loadLevel();
 updatePlayer();
@@ -453,7 +471,7 @@ Math.abs(enemy.y-y)<40
 ){
 
 x=60;
-y=120;
+y=320;
 
 updatePlayer();
 }
@@ -468,4 +486,4 @@ updatePlayer();
 </script>
 
 </body>
-</html></html>
+</html>
