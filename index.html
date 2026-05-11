@@ -12,6 +12,8 @@ user-scalable=no">
 
 <title>Forest Hunter</title>
 
+<link rel="manifest" href="manifest.json">
+
 <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 
@@ -26,6 +28,10 @@ overflow:hidden;
 font-family:Arial;
 touch-action:none;
 background:black;
+}
+
+button{
+outline:none;
 }
 
 #game{
@@ -438,25 +444,28 @@ document.getElementById("right").ontouchstart=()=>move(25,0);
 
 document.getElementById("attack").ontouchstart=()=>attack();
 
-document.addEventListener("keydown",(e)=>{
+window.addEventListener("keydown", function(e){
 
-if(e.key==="w" || e.key==="ArrowUp"){
+const key=e.key.toLowerCase();
+
+if(key==="w" || e.key==="ArrowUp"){
 move(0,-25);
 }
 
-if(e.key==="s" || e.key==="ArrowDown"){
+if(key==="s" || e.key==="ArrowDown"){
 move(0,25);
 }
 
-if(e.key==="a" || e.key==="ArrowLeft"){
+if(key==="a" || e.key==="ArrowLeft"){
 move(-25,0);
 }
 
-if(e.key==="d" || e.key==="ArrowRight"){
+if(key==="d" || e.key==="ArrowRight"){
 move(25,0);
 }
 
-if(e.key===" "){
+if(e.code==="Space"){
+e.preventDefault();
 attack();
 }
 
