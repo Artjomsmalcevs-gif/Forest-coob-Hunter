@@ -10,9 +10,9 @@ initial-scale=1.0,
 maximum-scale=1.0,
 user-scalable=no">
 
-<title>Forest Hunter</title>
+<meta name="screen-orientation" content="landscape">
 
-<!-- DESKTOP + PHONE ICON -->
+<title>Forest Hunter</title>
 
 <link rel="manifest" href="manifest.json">
 
@@ -31,6 +31,39 @@ height:100%;
 font-family:Arial;
 background:black;
 touch-action:none;
+}
+
+/* ROTATE PHONE SCREEN */
+
+@media screen and (orientation:portrait){
+
+body::before{
+content:"🔄 TURN PHONE HORIZONTAL";
+
+position:fixed;
+top:0;
+left:0;
+
+width:100%;
+height:100%;
+
+background:black;
+color:white;
+
+display:flex;
+justify-content:center;
+align-items:center;
+
+font-size:34px;
+text-align:center;
+
+z-index:999999;
+}
+
+#game{
+display:none;
+}
+
 }
 
 button{
@@ -287,24 +320,16 @@ display:none;
 
 <div id="game">
 
-<!-- DOWNLOAD BUTTON -->
-
 <a href="index.html" download>
 <button id="download">DOWNLOAD</button>
 </a>
 
-<!-- TITLE -->
-
 <div id="title">FOREST HUNTER</div>
-
-<!-- UI -->
 
 <div id="ui">
 LEVEL: 1<br>
 KILLS: 0/1
 </div>
-
-<!-- TUTORIAL -->
 
 <div id="tutorial">
 💻 W A S D / ARROWS<br>
@@ -312,15 +337,9 @@ KILLS: 0/1
 📱 TOUCH BUTTONS
 </div>
 
-<!-- PLAYER -->
-
 <div id="player"></div>
 
-<!-- PORTAL -->
-
 <div id="portal"></div>
-
-<!-- MOBILE CONTROLS -->
 
 <div id="controls">
 
@@ -350,13 +369,9 @@ let kills=0;
 let enemies=[];
 let walls=[];
 
-/* RANDOM */
-
 function random(min,max){
 return Math.floor(Math.random()*(max-min))+min;
 }
-
-/* TREES */
 
 function makeTrees(){
 
@@ -374,8 +389,6 @@ tree.style.top=random(150,window.innerHeight-200)+"px";
 game.appendChild(tree);
 }
 }
-
-/* WALLS */
 
 function makeWalls(){
 
@@ -408,8 +421,6 @@ h:22
 }
 }
 
-/* ENEMIES */
-
 function makeEnemies(){
 
 document.querySelectorAll(".enemy").forEach(e=>e.remove());
@@ -439,8 +450,6 @@ hp:Math.min(level,5)
 }
 }
 
-/* LOAD LEVEL */
-
 function loadLevel(){
 
 kills=0;
@@ -452,8 +461,6 @@ makeEnemies();
 updateUI();
 }
 
-/* UI */
-
 function updateUI(){
 
 ui.innerHTML=
@@ -461,15 +468,11 @@ ui.innerHTML=
 "<br>KILLS: "+kills+"/"+level;
 }
 
-/* PLAYER */
-
 function updatePlayer(){
 
 player.style.left=x+"px";
 player.style.top=y+"px";
 }
-
-/* MOVE */
 
 function move(dx,dy){
 
@@ -505,8 +508,6 @@ updatePlayer();
 checkPortal();
 }
 
-/* ATTACK */
-
 function attack(){
 
 enemies.forEach((enemy,index)=>{
@@ -538,8 +539,6 @@ updateUI();
 });
 }
 
-/* NEXT LEVEL */
-
 function checkPortal(){
 
 if(
@@ -565,16 +564,12 @@ ui.innerHTML="🏆 YOU WIN 🏆";
 }
 }
 
-/* PHONE CONTROLS */
-
 document.getElementById("up").ontouchstart=()=>move(0,-25);
 document.getElementById("down").ontouchstart=()=>move(0,25);
 document.getElementById("left").ontouchstart=()=>move(-25,0);
 document.getElementById("right").ontouchstart=()=>move(25,0);
 
 document.getElementById("attack").ontouchstart=()=>attack();
-
-/* PC CONTROLS */
 
 window.addEventListener("keydown",function(e){
 
@@ -603,8 +598,6 @@ attack();
 }
 
 });
-
-/* ENEMY AI */
 
 function enemyAI(){
 
