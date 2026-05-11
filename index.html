@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
 <meta charset="UTF-8">
 
 <meta name="viewport"
@@ -11,8 +12,16 @@ user-scalable=no">
 
 <title>Forest Hunter</title>
 
-<link rel="icon" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
+<!-- iPhone icon -->
+<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
+
+<!-- Browser icon -->
+<link rel="icon" type="image/png" href="icon.png">
+
+<!-- Mobile app mode -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="Forest Hunter">
 
 <style>
 
@@ -20,8 +29,8 @@ body{
 margin:0;
 overflow:hidden;
 font-family:Arial;
-background:black;
 touch-action:none;
+background:black;
 }
 
 #game{
@@ -31,7 +40,7 @@ height:100vh;
 overflow:hidden;
 
 background:
-linear-gradient(rgba(0,0,0,0.25),rgba(0,0,0,0.25)),
+linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),
 url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop');
 
 background-size:cover;
@@ -40,22 +49,22 @@ background-position:center;
 
 #logo{
 position:absolute;
-top:10px;
+top:15px;
 left:50%;
 transform:translateX(-50%);
 width:120px;
 height:120px;
-border-radius:25px;
-box-shadow:0 0 20px black;
+border-radius:30px;
+box-shadow:0 0 25px black;
 z-index:200;
 }
 
 #title{
 position:absolute;
-top:130px;
+top:145px;
 left:50%;
 transform:translateX(-50%);
-font-size:40px;
+font-size:38px;
 font-weight:bold;
 color:lime;
 text-shadow:3px 3px black;
@@ -64,7 +73,7 @@ z-index:200;
 
 #ui{
 position:absolute;
-top:200px;
+top:220px;
 left:15px;
 font-size:24px;
 color:white;
@@ -73,9 +82,9 @@ z-index:200;
 
 #tutorial{
 position:absolute;
-top:200px;
+top:220px;
 right:15px;
-background:rgba(0,0,0,0.5);
+background:rgba(0,0,0,0.55);
 padding:12px;
 border-radius:15px;
 color:white;
@@ -85,46 +94,46 @@ z-index:200;
 
 #player{
 position:absolute;
-width:50px;
-height:50px;
+width:55px;
+height:55px;
 background:cyan;
-border-radius:12px;
+border-radius:15px;
 left:60px;
-top:320px;
+top:340px;
 z-index:10;
 box-shadow:0 0 20px cyan;
 }
 
 .enemy{
 position:absolute;
-width:50px;
-height:50px;
+width:55px;
+height:55px;
 background:red;
 border-radius:50%;
-box-shadow:0 0 15px red;
+box-shadow:0 0 18px red;
 }
 
 #portal{
 position:absolute;
-width:80px;
-height:80px;
+width:90px;
+height:90px;
 border-radius:50%;
 background:gold;
-top:320px;
-right:30px;
+top:340px;
+right:25px;
 box-shadow:0 0 35px yellow;
 }
 
 .wall{
 position:absolute;
-background:#5d4037;
-border-radius:10px;
+background:#6d4c41;
+border-radius:12px;
 }
 
 .tree{
 position:absolute;
-width:60px;
-height:60px;
+width:65px;
+height:65px;
 background:green;
 border-radius:50%;
 }
@@ -134,25 +143,25 @@ position:absolute;
 bottom:20px;
 left:0;
 width:100%;
-height:220px;
+height:230px;
 z-index:300;
 }
 
 .btn{
 position:absolute;
-width:75px;
-height:75px;
+width:80px;
+height:80px;
 border:none;
 border-radius:50%;
 background:rgba(255,255,255,0.25);
 color:white;
-font-size:34px;
-backdrop-filter:blur(4px);
+font-size:36px;
+backdrop-filter:blur(5px);
 }
 
 #up{
-left:80px;
-bottom:130px;
+left:90px;
+bottom:140px;
 }
 
 #left{
@@ -161,31 +170,31 @@ bottom:60px;
 }
 
 #right{
-left:150px;
+left:170px;
 bottom:60px;
 }
 
 #down{
-left:80px;
-bottom:-10px;
+left:90px;
+bottom:-20px;
 }
 
 #attack{
 right:25px;
 bottom:60px;
-width:100px;
-height:100px;
+width:105px;
+height:105px;
 background:orange;
-font-size:40px;
+font-size:42px;
 }
 
 #download{
 position:absolute;
-top:10px;
-right:10px;
+top:15px;
+right:15px;
 padding:12px 18px;
 border:none;
-border-radius:12px;
+border-radius:15px;
 font-size:18px;
 font-weight:bold;
 background:gold;
@@ -213,7 +222,7 @@ KILLS: 0/1
 </div>
 
 <div id="tutorial">
-📱 MOBILE GAME<br>
+📱 iPHONE MODE<br>
 ⚔️ ATTACK<br>
 🌀 GO TO PORTAL
 </div>
@@ -242,7 +251,7 @@ const player=document.getElementById("player");
 const ui=document.getElementById("ui");
 
 let x=60;
-let y=320;
+let y=340;
 
 let level=1;
 let kills=0;
@@ -265,7 +274,7 @@ let tree=document.createElement("div");
 tree.className="tree";
 
 tree.style.left=random(0,320)+"px";
-tree.style.top=random(260,700)+"px";
+tree.style.top=random(280,720)+"px";
 
 game.appendChild(tree);
 }
@@ -284,12 +293,12 @@ let wall=document.createElement("div");
 wall.className="wall";
 
 let wx=random(50,260);
-let wy=random(300,700);
+let wy=random(320,720);
 
 wall.style.left=wx+"px";
 wall.style.top=wy+"px";
 wall.style.width=random(80,150)+"px";
-wall.style.height="20px";
+wall.style.height="22px";
 
 game.appendChild(wall);
 
@@ -297,7 +306,7 @@ walls.push({
 x:wx,
 y:wy,
 w:parseInt(wall.style.width),
-h:20
+h:22
 });
 }
 }
@@ -315,7 +324,7 @@ let enemy=document.createElement("div");
 enemy.className="enemy";
 
 let ex=random(120,320);
-let ey=random(320,700);
+let ey=random(340,720);
 
 enemy.style.left=ex+"px";
 enemy.style.top=ey+"px";
@@ -364,9 +373,9 @@ for(let wall of walls){
 
 if(
 nx<wall.x+wall.w &&
-nx+50>wall.x &&
+nx+55>wall.x &&
 ny<wall.y+wall.h &&
-ny+50>wall.y
+ny+55>wall.y
 ){
 return;
 }
@@ -376,13 +385,13 @@ x=nx;
 y=ny;
 
 if(x<0)x=0;
-if(y<260)y=260;
+if(y<280)y=280;
 
-if(x>window.innerWidth-50)
-x=window.innerWidth-50;
+if(x>window.innerWidth-55)
+x=window.innerWidth-55;
 
-if(y>window.innerHeight-280)
-y=window.innerHeight-280;
+if(y>window.innerHeight-290)
+y=window.innerHeight-290;
 
 updatePlayer();
 
@@ -424,7 +433,7 @@ function checkPortal(){
 
 if(
 x>window.innerWidth-130 &&
-y<420 &&
+y<440 &&
 kills>=level
 ){
 
@@ -433,7 +442,7 @@ if(level<28){
 level++;
 
 x=60;
-y=320;
+y=340;
 
 loadLevel();
 updatePlayer();
@@ -471,7 +480,7 @@ Math.abs(enemy.y-y)<40
 ){
 
 x=60;
-y=320;
+y=340;
 
 updatePlayer();
 }
