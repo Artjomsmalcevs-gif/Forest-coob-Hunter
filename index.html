@@ -1,87 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Forest Hunter Mobile</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Forest Hunter</title>
+
+<link rel="manifest" href="manifest.json">
 
 <style>
+
 body{
-  margin:0;
-  overflow:hidden;
-  font-family:Arial;
-  background:#1f3d1f;
-  touch-action:none;
+margin:0;
+overflow:hidden;
+font-family:Arial;
+background:#1b5e20;
+touch-action:none;
 }
 
 #game{
-  position:relative;
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
-  background:linear-gradient(#4caf50,#1b5e20);
+position:relative;
+width:100vw;
+height:100vh;
+overflow:hidden;
+background:
+linear-gradient(rgba(0,0,0,0.2),rgba(0,0,0,0.2)),
+url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop');
+background-size:cover;
+background-position:center;
 }
 
-#player{
-  position:absolute;
-  width:45px;
-  height:45px;
-  background:cyan;
-  border-radius:10px;
-  left:50px;
-  top:50px;
-  z-index:10;
-}
-
-.enemy{
-  position:absolute;
-  width:45px;
-  height:45px;
-  background:red;
-  border-radius:50%;
-}
-
-#portal{
-  position:absolute;
-  width:60px;
-  height:60px;
-  background:gold;
-  border-radius:50%;
-  left:85%;
-  top:80%;
+#title{
+position:absolute;
+top:10px;
+left:10px;
+font-size:45px;
+font-weight:bold;
+color:lime;
+text-shadow:3px 3px black;
+z-index:100;
 }
 
 #ui{
-  position:absolute;
-  top:10px;
-  left:10px;
-  color:white;
-  font-size:20px;
-  z-index:100;
+position:absolute;
+top:90px;
+left:10px;
+font-size:24px;
+color:white;
+z-index:100;
+}
+
+#tutorial{
+position:absolute;
+top:10px;
+right:10px;
+background:rgba(0,0,0,0.5);
+padding:15px;
+border-radius:15px;
+color:white;
+font-size:20px;
+z-index:100;
+}
+
+#player{
+position:absolute;
+width:50px;
+height:50px;
+background:cyan;
+border-radius:12px;
+left:60px;
+top:60px;
+z-index:10;
+box-shadow:0 0 15px cyan;
+}
+
+.enemy{
+position:absolute;
+width:50px;
+height:50px;
+background:red;
+border-radius:50%;
+box-shadow:0 0 15px red;
+}
+
+#portal{
+position:absolute;
+width:70px;
+height:70px;
+border-radius:50%;
+background:gold;
+right:70px;
+bottom:100px;
+box-shadow:0 0 30px yellow;
+}
+
+.wall{
+position:absolute;
+background:#6d4c41;
+border-radius:10px;
+}
+
+.tree{
+position:absolute;
+width:70px;
+height:70px;
+background:green;
+border-radius:50%;
 }
 
 .btn{
-  position:absolute;
-  width:70px;
-  height:70px;
-  border:none;
-  border-radius:50%;
-  background:rgba(255,255,255,0.3);
-  color:white;
-  font-size:30px;
+position:absolute;
+width:80px;
+height:80px;
+border:none;
+border-radius:50%;
+background:rgba(255,255,255,0.25);
+color:white;
+font-size:35px;
+backdrop-filter:blur(5px);
 }
 
-#up{left:90px;bottom:170px;}
-#left{left:10px;bottom:90px;}
-#right{left:170px;bottom:90px;}
-#down{left:90px;bottom:10px;}
+#up{left:90px;bottom:190px;}
+#left{left:10px;bottom:110px;}
+#right{left:170px;bottom:110px;}
+#down{left:90px;bottom:30px;}
 
 #attack{
-  right:30px;
-  bottom:70px;
-  width:90px;
-  height:90px;
-  background:orange;
+right:30px;
+bottom:80px;
+width:100px;
+height:100px;
+background:orange;
+font-size:40px;
 }
+
+#download{
+position:absolute;
+top:10px;
+right:10px;
+padding:15px 25px;
+font-size:22px;
+border:none;
+border-radius:15px;
+background:gold;
+font-weight:bold;
+z-index:200;
+}
+
 </style>
 </head>
 
@@ -89,10 +154,22 @@ body{
 
 <div id="game">
 
+<div id="title">FOREST HUNTER</div>
+
 <div id="ui">
 LEVEL: 1<br>
-KILLS: 0
+KILLS: 0/1
 </div>
+
+<div id="tutorial">
+📱 TOUCH CONTROLS<br>
+⚔️ ATTACK ENEMIES<br>
+🌀 GO TO PORTAL
+</div>
+
+<a href="index.html" download>
+<button id="download">DOWNLOAD GAME</button>
+</a>
 
 <div id="player"></div>
 <div id="portal"></div>
@@ -108,168 +185,254 @@ KILLS: 0
 
 <script>
 
+const game=document.getElementById("game");
 const player=document.getElementById("player");
-const portal=document.getElementById("portal");
 const ui=document.getElementById("ui");
 
-let x=50;
-let y=50;
+let x=60;
+let y=60;
 
 let level=1;
 let kills=0;
 
 let enemies=[];
+let walls=[];
+
+function random(min,max){
+return Math.floor(Math.random()*(max-min))+min;
+}
+
+function makeTrees(){
+
+document.querySelectorAll(".tree").forEach(t=>t.remove());
+
+for(let i=0;i<15;i++){
+
+let tree=document.createElement("div");
+
+tree.className="tree";
+
+tree.style.left=random(100,1200)+"px";
+tree.style.top=random(50,650)+"px";
+
+game.appendChild(tree);
+}
+}
+
+function makeWalls(){
+
+document.querySelectorAll(".wall").forEach(w=>w.remove());
+
+walls=[];
+
+for(let i=0;i<level+2;i++){
+
+let wall=document.createElement("div");
+
+wall.className="wall";
+
+let wx=random(200,1000);
+let wy=random(100,600);
+let ww=random(120,250);
+
+wall.style.left=wx+"px";
+wall.style.top=wy+"px";
+wall.style.width=ww+"px";
+wall.style.height="25px";
+
+game.appendChild(wall);
+
+walls.push({
+x:wx,
+y:wy,
+w:ww,
+h:25
+});
+}
+}
 
 function makeEnemies(){
 
- document.querySelectorAll(".enemy").forEach(e=>e.remove());
+document.querySelectorAll(".enemy").forEach(e=>e.remove());
 
- enemies=[];
+enemies=[];
 
- for(let i=0;i<level+1;i++){
+for(let i=0;i<level+1;i++){
 
-  let enemy=document.createElement("div");
+let enemy=document.createElement("div");
 
-  enemy.className="enemy";
+enemy.className="enemy";
 
-  let ex=Math.random()*700+100;
-  let ey=Math.random()*400+100;
+let ex=random(300,1100);
+let ey=random(100,600);
 
-  enemy.style.left=ex+"px";
-  enemy.style.top=ey+"px";
+enemy.style.left=ex+"px";
+enemy.style.top=ey+"px";
 
-  game.appendChild(enemy);
+game.appendChild(enemy);
 
-  enemies.push({
-   el:enemy,
-   x:ex,
-   y:ey,
-   hp:Math.min(level,4)
-  });
- }
+enemies.push({
+el:enemy,
+x:ex,
+y:ey,
+hp:Math.min(level,5)
+});
+}
 }
 
+function loadLevel(){
+
+kills=0;
+
+makeTrees();
+makeWalls();
 makeEnemies();
 
-function update(){
-
- player.style.left=x+"px";
- player.style.top=y+"px";
-
- ui.innerHTML=
- "LEVEL: "+level+
- "<br>KILLS: "+kills+"/"+level;
+updateUI();
 }
 
-update();
+function updateUI(){
+
+ui.innerHTML=
+"LEVEL: "+level+
+"<br>KILLS: "+kills+"/"+level;
+}
+
+function updatePlayer(){
+
+player.style.left=x+"px";
+player.style.top=y+"px";
+}
 
 function move(dx,dy){
 
- x+=dx;
- y+=dy;
+let nx=x+dx;
+let ny=y+dy;
 
- if(x<0)x=0;
- if(y<0)y=0;
+for(let wall of walls){
 
- if(x>window.innerWidth-45)
- x=window.innerWidth-45;
-
- if(y>window.innerHeight-45)
- y=window.innerHeight-45;
-
- update();
+if(
+nx<wall.x+wall.w &&
+nx+50>wall.x &&
+ny<wall.y+wall.h &&
+ny+50>wall.y
+){
+return;
+}
 }
 
-document.getElementById("up").ontouchstart=()=>move(0,-20);
-document.getElementById("down").ontouchstart=()=>move(0,20);
-document.getElementById("left").ontouchstart=()=>move(-20,0);
-document.getElementById("right").ontouchstart=()=>move(20,0);
+x=nx;
+y=ny;
 
-document.getElementById("attack").ontouchstart=()=>{
+if(x<0)x=0;
+if(y<0)y=0;
 
- enemies.forEach((enemy,index)=>{
+if(x>window.innerWidth-50)
+x=window.innerWidth-50;
 
-  let dx=Math.abs(enemy.x-x);
-  let dy=Math.abs(enemy.y-y);
+if(y>window.innerHeight-50)
+y=window.innerHeight-50;
 
-  if(dx<80 && dy<80){
+updatePlayer();
 
-   enemy.hp--;
+checkPortal();
+}
 
-   enemy.el.style.background="orange";
+function attack(){
 
-   setTimeout(()=>{
-    enemy.el.style.background="red";
-   },100);
+enemies.forEach((enemy,index)=>{
 
-   if(enemy.hp<=0){
+let dx=Math.abs(enemy.x-x);
+let dy=Math.abs(enemy.y-y);
 
-    enemy.el.remove();
+if(dx<90 && dy<90){
 
-    enemies.splice(index,1);
+enemy.hp--;
 
-    kills++;
+enemy.el.style.background="orange";
 
-    update();
-   }
-  }
- });
+setTimeout(()=>{
+enemy.el.style.background="red";
+},100);
 
- // следующий уровень
- if(
-  x>window.innerWidth-150 &&
-  y>window.innerHeight-150 &&
-  kills>=level
- ){
+if(enemy.hp<=0){
 
-  if(level<28){
+enemy.el.remove();
 
-   level++;
-   kills=0;
+enemies.splice(index,1);
 
-   makeEnemies();
+kills++;
 
-   x=50;
-   y=50;
+updateUI();
+}
+}
+});
+}
 
-   update();
+function checkPortal(){
 
-  }else{
+if(
+x>window.innerWidth-180 &&
+y>window.innerHeight-180 &&
+kills>=level
+){
 
-   ui.innerHTML="🏆 YOU WIN 🏆";
-  }
- }
-};
+if(level<28){
+
+level++;
+
+x=60;
+y=60;
+
+loadLevel();
+updatePlayer();
+
+}else{
+
+ui.innerHTML="🏆 YOU WIN 🏆";
+}
+}
+}
+
+document.getElementById("up").ontouchstart=()=>move(0,-25);
+document.getElementById("down").ontouchstart=()=>move(0,25);
+document.getElementById("left").ontouchstart=()=>move(-25,0);
+document.getElementById("right").ontouchstart=()=>move(25,0);
+
+document.getElementById("attack").ontouchstart=()=>attack();
 
 function enemyAI(){
 
- enemies.forEach(enemy=>{
+enemies.forEach(enemy=>{
 
-  if(enemy.x<x) enemy.x+=1+level*0.1;
-  if(enemy.x>x) enemy.x-=1+level*0.1;
+if(enemy.x<x)enemy.x+=1+level*0.1;
+if(enemy.x>x)enemy.x-=1+level*0.1;
 
-  if(enemy.y<y) enemy.y+=1+level*0.1;
-  if(enemy.y>y) enemy.y-=1+level*0.1;
+if(enemy.y<y)enemy.y+=1+level*0.1;
+if(enemy.y>y)enemy.y-=1+level*0.1;
 
-  enemy.el.style.left=enemy.x+"px";
-  enemy.el.style.top=enemy.y+"px";
+enemy.el.style.left=enemy.x+"px";
+enemy.el.style.top=enemy.y+"px";
 
-  if(
-   Math.abs(enemy.x-x)<40 &&
-   Math.abs(enemy.y-y)<40
-  ){
+if(
+Math.abs(enemy.x-x)<40 &&
+Math.abs(enemy.y-y)<40
+){
 
-   x=50;
-   y=50;
+x=60;
+y=60;
 
-   update();
-  }
- });
+updatePlayer();
+}
+});
 }
 
 setInterval(enemyAI,30);
 
+loadLevel();
+updatePlayer();
+
 </script>
 
 </body>
-</html></html>
+</html>
