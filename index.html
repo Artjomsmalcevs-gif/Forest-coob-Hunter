@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Forest Hunter</title>
+<title>Forest Hunter Mobile</title>
 
 <style>
 body{
@@ -10,6 +10,7 @@ body{
   overflow:hidden;
   font-family:Arial;
   background:#1f3d1f;
+  touch-action:none;
 }
 
 #game{
@@ -18,15 +19,6 @@ body{
   height:100vh;
   overflow:hidden;
   background:linear-gradient(#4caf50,#1b5e20);
-}
-
-.tree{
-  position:absolute;
-  width:70px;
-  height:70px;
-  border-radius:50%;
-  background:#2e7d32;
-  z-index:1;
 }
 
 #player{
@@ -46,22 +38,16 @@ body{
   height:45px;
   background:red;
   border-radius:50%;
-  z-index:9;
-}
-
-.wall{
-  position:absolute;
-  background:#5d4037;
 }
 
 #portal{
   position:absolute;
   width:60px;
   height:60px;
-  border-radius:50%;
   background:gold;
-  box-shadow:0 0 20px yellow;
-  z-index:8;
+  border-radius:50%;
+  left:85%;
+  top:80%;
 }
 
 #ui{
@@ -69,43 +55,32 @@ body{
   top:10px;
   left:10px;
   color:white;
-  font-size:22px;
+  font-size:20px;
   z-index:100;
 }
 
-#tutorial{
+.btn{
   position:absolute;
-  bottom:20px;
-  left:20px;
-  color:white;
-  background:rgba(0,0,0,0.5);
-  padding:15px;
-  border-radius:12px;
-  font-size:20px;
-  z-index:200;
-}
-
-#finalBoss{
-  position:absolute;
-  width:120px;
-  height:120px;
-  border-radius:50%;
-  background:purple;
-  display:none;
-  box-shadow:0 0 40px violet;
-}
-
-#downloadBtn{
-  position:absolute;
-  top:10px;
-  right:10px;
-  padding:10px 20px;
-  font-size:18px;
+  width:70px;
+  height:70px;
   border:none;
-  border-radius:10px;
-  background:gold;
-  cursor:pointer;
-  z-index:300;
+  border-radius:50%;
+  background:rgba(255,255,255,0.3);
+  color:white;
+  font-size:30px;
+}
+
+#up{left:90px;bottom:170px;}
+#left{left:10px;bottom:90px;}
+#right{left:170px;bottom:90px;}
+#down{left:90px;bottom:10px;}
+
+#attack{
+  right:30px;
+  bottom:70px;
+  width:90px;
+  height:90px;
+  background:orange;
 }
 </style>
 </head>
@@ -114,115 +89,54 @@ body{
 
 <div id="game">
 
-<div id="ui"></div>
-
-<div id="tutorial">
-W A S D = движение<br>
-SPACE = удар мечом<br>
-Доберись до портала!
+<div id="ui">
+LEVEL: 1<br>
+KILLS: 0
 </div>
-
-<a href="index.html" download>
-<button id="downloadBtn">DOWNLOAD GAME</button>
-</a>
 
 <div id="player"></div>
 <div id="portal"></div>
-<div id="finalBoss"></div>
+
+<button class="btn" id="up">↑</button>
+<button class="btn" id="left">←</button>
+<button class="btn" id="right">→</button>
+<button class="btn" id="down">↓</button>
+
+<button class="btn" id="attack">⚔️</button>
 
 </div>
 
 <script>
 
-const game = document.getElementById('game');
-const player = document.getElementById('player');
-const portal = document.getElementById('portal');
-const ui = document.getElementById('ui');
-const finalBoss = document.getElementById('finalBoss');
+const player=document.getElementById("player");
+const portal=document.getElementById("portal");
+const ui=document.getElementById("ui");
 
-let x = 50;
-let y = 50;
-let speed = 6;
-let level = 1;
-let kills = 0;
-let neededKills = 1;
-let enemyHealth = 1;
+let x=50;
+let y=50;
 
-let enemies = [];
-let walls = [];
+let level=1;
+let kills=0;
 
-function random(min,max){
- return Math.floor(Math.random()*(max-min))+min;
-}
-
-function makeForest(){
-
- document.querySelectorAll('.tree').forEach(t=>t.remove());
-
- for(let i=0;i<20;i++){
-
-  const tree = document.createElement('div');
-
-  tree.className='tree';
-
-  tree.style.left=random(0,1200)+'px';
-  tree.style.top=random(0,700)+'px';
-
-  game.appendChild(tree);
- }
-}
-
-function makeWalls(){
-
- document.querySelectorAll('.wall').forEach(w=>w.remove());
-
- walls=[];
-
- for(let i=0;i<level+2;i++){
-
-  const wall=document.createElement('div');
-
-  wall.className='wall';
-
-  const wx=random(150,1100);
-  const wy=random(50,650);
-  const ww=random(120,300);
-
-  wall.style.left=wx+'px';
-  wall.style.top=wy+'px';
-  wall.style.width=ww+'px';
-  wall.style.height='20px';
-
-  game.appendChild(wall);
-
-  walls.push({
-   x:wx,
-   y:wy,
-   w:ww,
-   h:20
-  });
- }
-}
+let enemies=[];
 
 function makeEnemies(){
 
- document.querySelectorAll('.enemy').forEach(e=>e.remove());
+ document.querySelectorAll(".enemy").forEach(e=>e.remove());
 
  enemies=[];
 
- const amount = level + 1;
+ for(let i=0;i<level+1;i++){
 
- for(let i=0;i<amount;i++){
+  let enemy=document.createElement("div");
 
-  const enemy=document.createElement('div');
+  enemy.className="enemy";
 
-  enemy.className='enemy';
+  let ex=Math.random()*700+100;
+  let ey=Math.random()*400+100;
 
-  const ex=random(300,1200);
-  const ey=random(50,650);
-
-  enemy.style.left=ex+'px';
-  enemy.style.top=ey+'px';
+  enemy.style.left=ex+"px";
+  enemy.style.top=ey+"px";
 
   game.appendChild(enemy);
 
@@ -230,168 +144,126 @@ function makeEnemies(){
    el:enemy,
    x:ex,
    y:ey,
-   hp:enemyHealth
+   hp:Math.min(level,4)
   });
  }
 }
 
-function loadLevel(){
+makeEnemies();
 
- x=50;
- y=50;
+function update(){
 
- kills=0;
-
- neededKills=level;
- enemyHealth=Math.min(level,6);
-
- player.style.left=x+'px';
- player.style.top=y+'px';
-
- portal.style.left='1150px';
- portal.style.top='620px';
+ player.style.left=x+"px";
+ player.style.top=y+"px";
 
  ui.innerHTML=
- 'LEVEL: '+level+
- ' | KILLS: '+kills+'/'+neededKills;
-
- makeForest();
- makeWalls();
- makeEnemies();
-
- if(level===28){
-
-  finalBoss.style.display='block';
-
-  finalBoss.style.left='1000px';
-  finalBoss.style.top='300px';
- }
+ "LEVEL: "+level+
+ "<br>KILLS: "+kills+"/"+level;
 }
 
-loadLevel();
+update();
 
-function touching(ax,ay,bx,by,bw,bh){
+function move(dx,dy){
 
- return (
-  ax < bx + bw &&
-  ax + 45 > bx &&
-  ay < by + bh &&
-  ay + 45 > by
- );
+ x+=dx;
+ y+=dy;
+
+ if(x<0)x=0;
+ if(y<0)y=0;
+
+ if(x>window.innerWidth-45)
+ x=window.innerWidth-45;
+
+ if(y>window.innerHeight-45)
+ y=window.innerHeight-45;
+
+ update();
 }
 
-function wallCollision(nx,ny){
+document.getElementById("up").ontouchstart=()=>move(0,-20);
+document.getElementById("down").ontouchstart=()=>move(0,20);
+document.getElementById("left").ontouchstart=()=>move(-20,0);
+document.getElementById("right").ontouchstart=()=>move(20,0);
 
- for(let wall of walls){
+document.getElementById("attack").ontouchstart=()=>{
 
-  if(
-   nx < wall.x + wall.w &&
-   nx + 45 > wall.x &&
-   ny < wall.y + wall.h &&
-   ny + 45 > wall.y
-  ){
-   return true;
-  }
- }
+ enemies.forEach((enemy,index)=>{
 
- return false;
-}
+  let dx=Math.abs(enemy.x-x);
+  let dy=Math.abs(enemy.y-y);
 
-document.addEventListener('keydown',(e)=>{
+  if(dx<80 && dy<80){
 
- let nx=x;
- let ny=y;
+   enemy.hp--;
 
- if(e.key==='w') ny-=speed;
- if(e.key==='s') ny+=speed;
- if(e.key==='a') nx-=speed;
- if(e.key==='d') nx+=speed;
+   enemy.el.style.background="orange";
 
- if(!wallCollision(nx,ny)){
-  x=nx;
-  y=ny;
- }
+   setTimeout(()=>{
+    enemy.el.style.background="red";
+   },100);
 
- player.style.left=x+'px';
- player.style.top=y+'px';
+   if(enemy.hp<=0){
 
- if(e.key===' '){
+    enemy.el.remove();
 
-  enemies.forEach((enemy,index)=>{
+    enemies.splice(index,1);
 
-   const dx=Math.abs(enemy.x-x);
-   const dy=Math.abs(enemy.y-y);
+    kills++;
 
-   if(dx<80 && dy<80){
-
-    enemy.hp--;
-
-    enemy.el.style.transform='scale(1.3)';
-
-    setTimeout(()=>{
-      enemy.el.style.transform='scale(1)';
-    },100);
-
-    if(enemy.hp<=0){
-
-      enemy.el.remove();
-
-      enemies.splice(index,1);
-
-      kills++;
-
-      ui.innerHTML=
-      'LEVEL: '+level+
-      ' | KILLS: '+kills+'/'+neededKills+
-      ' | ENEMY HP: '+enemyHealth;
-    }
+    update();
    }
-  });
- }
+  }
+ });
 
+ // следующий уровень
  if(
-  touching(x,y,1150,620,60,60)
-  && kills>=neededKills
+  x>window.innerWidth-150 &&
+  y>window.innerHeight-150 &&
+  kills>=level
  ){
 
   if(level<28){
 
    level++;
+   kills=0;
 
-   loadLevel();
+   makeEnemies();
+
+   x=50;
+   y=50;
+
+   update();
 
   }else{
 
-   ui.innerHTML='YOU SAVED THE MAGIC FOREST!';
-   tutorial.innerHTML='🏆 FINAL BOSS DEFEATED! 🏆';
+   ui.innerHTML="🏆 YOU WIN 🏆";
   }
  }
-});
+};
 
 function enemyAI(){
 
  enemies.forEach(enemy=>{
 
-  if(enemy.x<x) enemy.x+=1+level*0.15;
-  if(enemy.x>x) enemy.x-=1+level*0.15;
+  if(enemy.x<x) enemy.x+=1+level*0.1;
+  if(enemy.x>x) enemy.x-=1+level*0.1;
 
-  if(enemy.y<y) enemy.y+=1+level*0.15;
-  if(enemy.y>y) enemy.y-=1+level*0.15;
+  if(enemy.y<y) enemy.y+=1+level*0.1;
+  if(enemy.y>y) enemy.y-=1+level*0.1;
 
-  enemy.el.style.left=enemy.x+'px';
-  enemy.el.style.top=enemy.y+'px';
+  enemy.el.style.left=enemy.x+"px";
+  enemy.el.style.top=enemy.y+"px";
 
-  if(touching(x,y,enemy.x,enemy.y,45,45)){
-
-   ui.innerHTML='YOU DIED!';
+  if(
+   Math.abs(enemy.x-x)<40 &&
+   Math.abs(enemy.y-y)<40
+  ){
 
    x=50;
    y=50;
 
-   player.style.left=x+'px';
-   player.style.top=y+'px';
+   update();
   }
-
  });
 }
 
@@ -400,4 +272,4 @@ setInterval(enemyAI,30);
 </script>
 
 </body>
-</html>
+</html></html>
