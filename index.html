@@ -1,4 +1,4 @@
-<index.html>
+<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
@@ -94,6 +94,19 @@ body{
   display:none;
   box-shadow:0 0 40px violet;
 }
+
+#downloadBtn{
+  position:absolute;
+  top:10px;
+  right:10px;
+  padding:10px 20px;
+  font-size:18px;
+  border:none;
+  border-radius:10px;
+  background:gold;
+  cursor:pointer;
+  z-index:300;
+}
 </style>
 </head>
 
@@ -108,6 +121,10 @@ W A S D = движение<br>
 SPACE = удар мечом<br>
 Доберись до портала!
 </div>
+
+<a href="index.html" download>
+<button id="downloadBtn">DOWNLOAD GAME</button>
+</a>
 
 <div id="player"></div>
 <div id="portal"></div>
@@ -381,5 +398,6 @@ function enemyAI(){
 setInterval(enemyAI,30);
 
 </script>
+
 </body>
 </html>
