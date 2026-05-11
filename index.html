@@ -12,8 +12,10 @@ user-scalable=no">
 
 <title>Forest Hunter</title>
 
+<!-- APP INSTALL -->
 <link rel="manifest" href="manifest.json">
 
+<!-- ICONS -->
 <link rel="apple-touch-icon" sizes="180x180" href="icon.png">
 <link rel="icon" type="image/png" href="icon.png">
 
@@ -22,12 +24,13 @@ user-scalable=no">
 
 <style>
 
-body{
+html,body{
 margin:0;
 overflow:hidden;
+height:100%;
 font-family:Arial;
-touch-action:none;
 background:black;
+touch-action:none;
 }
 
 button{
@@ -48,32 +51,40 @@ background-size:cover;
 background-position:center;
 }
 
-#logo{
+/* DOWNLOAD BUTTON */
+
+#download{
 position:absolute;
 top:15px;
-left:50%;
-transform:translateX(-50%);
-width:110px;
-height:110px;
-border-radius:25px;
-z-index:200;
+right:15px;
+padding:12px 18px;
+border:none;
+border-radius:15px;
+font-size:18px;
+font-weight:bold;
+background:gold;
+z-index:500;
 }
+
+/* TITLE */
 
 #title{
 position:absolute;
-top:130px;
+top:20px;
 left:50%;
 transform:translateX(-50%);
-font-size:38px;
+font-size:42px;
 font-weight:bold;
 color:lime;
 text-shadow:3px 3px black;
 z-index:200;
 }
 
+/* UI */
+
 #ui{
 position:absolute;
-top:200px;
+top:90px;
 left:15px;
 font-size:22px;
 color:white;
@@ -82,7 +93,7 @@ z-index:200;
 
 #tutorial{
 position:absolute;
-top:200px;
+top:90px;
 right:15px;
 background:rgba(0,0,0,0.5);
 padding:12px;
@@ -92,6 +103,8 @@ font-size:17px;
 z-index:200;
 }
 
+/* PLAYER */
+
 #player{
 position:absolute;
 width:55px;
@@ -99,10 +112,12 @@ height:55px;
 background:cyan;
 border-radius:15px;
 left:60px;
-top:340px;
+top:300px;
 box-shadow:0 0 20px cyan;
 z-index:10;
 }
+
+/* ENEMIES */
 
 .enemy{
 position:absolute;
@@ -113,22 +128,28 @@ border-radius:50%;
 box-shadow:0 0 18px red;
 }
 
+/* PORTAL */
+
 #portal{
 position:absolute;
 width:90px;
 height:90px;
 border-radius:50%;
 background:gold;
-top:340px;
+top:300px;
 right:25px;
 box-shadow:0 0 35px yellow;
 }
+
+/* WALLS */
 
 .wall{
 position:absolute;
 background:#6d4c41;
 border-radius:12px;
 }
+
+/* TREES */
 
 .tree{
 position:absolute;
@@ -137,6 +158,8 @@ height:65px;
 background:green;
 border-radius:50%;
 }
+
+/* MOBILE CONTROLS */
 
 #controls{
 position:absolute;
@@ -188,6 +211,16 @@ background:orange;
 font-size:42px;
 }
 
+/* HIDE MOBILE BUTTONS ON PC */
+
+@media (min-width:900px){
+
+#controls{
+display:none;
+}
+
+}
+
 </style>
 </head>
 
@@ -195,9 +228,17 @@ font-size:42px;
 
 <div id="game">
 
-<img id="logo" src="icon.png">
+<!-- DOWNLOAD -->
+
+<a href="index.html" download>
+<button id="download">DOWNLOAD</button>
+</a>
+
+<!-- TITLE -->
 
 <div id="title">FOREST HUNTER</div>
+
+<!-- UI -->
 
 <div id="ui">
 LEVEL: 1<br>
@@ -205,14 +246,20 @@ KILLS: 0/1
 </div>
 
 <div id="tutorial">
-💻 W A S D<br>
-📱 TOUCH BUTTONS<br>
-⚔️ SPACE = ATTACK
+💻 W A S D / ARROWS<br>
+⚔️ SPACE = ATTACK<br>
+📱 TOUCH BUTTONS
 </div>
+
+<!-- PLAYER -->
 
 <div id="player"></div>
 
+<!-- PORTAL -->
+
 <div id="portal"></div>
+
+<!-- MOBILE BUTTONS -->
 
 <div id="controls">
 
@@ -234,7 +281,7 @@ const player=document.getElementById("player");
 const ui=document.getElementById("ui");
 
 let x=60;
-let y=340;
+let y=300;
 
 let level=1;
 let kills=0;
@@ -242,9 +289,13 @@ let kills=0;
 let enemies=[];
 let walls=[];
 
+/* RANDOM */
+
 function random(min,max){
 return Math.floor(Math.random()*(max-min))+min;
 }
+
+/* TREES */
 
 function makeTrees(){
 
@@ -256,12 +307,14 @@ let tree=document.createElement("div");
 
 tree.className="tree";
 
-tree.style.left=random(0,320)+"px";
-tree.style.top=random(280,720)+"px";
+tree.style.left=random(0,window.innerWidth-70)+"px";
+tree.style.top=random(150,window.innerHeight-200)+"px";
 
 game.appendChild(tree);
 }
 }
+
+/* WALLS */
 
 function makeWalls(){
 
@@ -275,12 +328,12 @@ let wall=document.createElement("div");
 
 wall.className="wall";
 
-let wx=random(50,260);
-let wy=random(320,720);
+let wx=random(50,window.innerWidth-200);
+let wy=random(180,window.innerHeight-250);
 
 wall.style.left=wx+"px";
 wall.style.top=wy+"px";
-wall.style.width=random(80,150)+"px";
+wall.style.width=random(80,180)+"px";
 wall.style.height="22px";
 
 game.appendChild(wall);
@@ -294,6 +347,8 @@ h:22
 }
 }
 
+/* ENEMIES */
+
 function makeEnemies(){
 
 document.querySelectorAll(".enemy").forEach(e=>e.remove());
@@ -306,8 +361,8 @@ let enemy=document.createElement("div");
 
 enemy.className="enemy";
 
-let ex=random(120,320);
-let ey=random(340,720);
+let ex=random(120,window.innerWidth-120);
+let ey=random(220,window.innerHeight-250);
 
 enemy.style.left=ex+"px";
 enemy.style.top=ey+"px";
@@ -323,6 +378,8 @@ hp:Math.min(level,5)
 }
 }
 
+/* LOAD LEVEL */
+
 function loadLevel(){
 
 kills=0;
@@ -334,6 +391,8 @@ makeEnemies();
 updateUI();
 }
 
+/* UI */
+
 function updateUI(){
 
 ui.innerHTML=
@@ -341,11 +400,15 @@ ui.innerHTML=
 "<br>KILLS: "+kills+"/"+level;
 }
 
+/* PLAYER */
+
 function updatePlayer(){
 
 player.style.left=x+"px";
 player.style.top=y+"px";
 }
+
+/* MOVE */
 
 function move(dx,dy){
 
@@ -368,18 +431,20 @@ x=nx;
 y=ny;
 
 if(x<0)x=0;
-if(y<280)y=280;
+if(y<150)y=150;
 
 if(x>window.innerWidth-55)
 x=window.innerWidth-55;
 
-if(y>window.innerHeight-290)
-y=window.innerHeight-290;
+if(y>window.innerHeight-100)
+y=window.innerHeight-100;
 
 updatePlayer();
 
 checkPortal();
 }
+
+/* ATTACK */
 
 function attack(){
 
@@ -412,11 +477,13 @@ updateUI();
 });
 }
 
+/* NEXT LEVEL */
+
 function checkPortal(){
 
 if(
 x>window.innerWidth-130 &&
-y<440 &&
+Math.abs(y-300)<120 &&
 kills>=level
 ){
 
@@ -425,7 +492,7 @@ if(level<28){
 level++;
 
 x=60;
-y=340;
+y=300;
 
 loadLevel();
 updatePlayer();
@@ -437,6 +504,8 @@ ui.innerHTML="🏆 YOU WIN 🏆";
 }
 }
 
+/* PHONE CONTROLS */
+
 document.getElementById("up").ontouchstart=()=>move(0,-25);
 document.getElementById("down").ontouchstart=()=>move(0,25);
 document.getElementById("left").ontouchstart=()=>move(-25,0);
@@ -444,32 +513,37 @@ document.getElementById("right").ontouchstart=()=>move(25,0);
 
 document.getElementById("attack").ontouchstart=()=>attack();
 
-window.addEventListener("keydown", function(e){
+/* PC CONTROLS */
+
+window.addEventListener("keydown",function(e){
+
+e.preventDefault();
 
 const key=e.key.toLowerCase();
 
-if(key==="w" || e.key==="ArrowUp"){
+if(key==="w" || key==="arrowup"){
 move(0,-25);
 }
 
-if(key==="s" || e.key==="ArrowDown"){
+if(key==="s" || key==="arrowdown"){
 move(0,25);
 }
 
-if(key==="a" || e.key==="ArrowLeft"){
+if(key==="a" || key==="arrowleft"){
 move(-25,0);
 }
 
-if(key==="d" || e.key==="ArrowRight"){
+if(key==="d" || key==="arrowright"){
 move(25,0);
 }
 
 if(e.code==="Space"){
-e.preventDefault();
 attack();
 }
 
 });
+
+/* ENEMY AI */
 
 function enemyAI(){
 
@@ -490,7 +564,7 @@ Math.abs(enemy.y-y)<40
 ){
 
 x=60;
-y=340;
+y=300;
 
 updatePlayer();
 }
