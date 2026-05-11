@@ -12,13 +12,6 @@ user-scalable=no">
 
 <title>Forest Hunter</title>
 
-<link rel="manifest" href="manifest.json">
-
-<link rel="apple-touch-icon" sizes="180x180" href="icon.png">
-<link rel="icon" type="image/png" href="icon.png">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-
 <style>
 
 html,body{
@@ -27,14 +20,7 @@ overflow:hidden;
 height:100%;
 font-family:Arial;
 background:black;
-touch-action:none;
 }
-
-button{
-outline:none;
-}
-
-/* GAME */
 
 #game{
 position:relative;
@@ -43,37 +29,13 @@ height:100vh;
 overflow:hidden;
 
 background:
-linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),
+linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),
 url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop');
 
 background-size:cover;
 background-position:center;
-}
 
-/* DOWNLOAD BUTTON */
-
-#download{
-position:fixed;
-
-top:15px;
-right:15px;
-
-z-index:99999;
-
-padding:14px 20px;
-
-background:gold;
-color:black;
-
-font-size:20px;
-font-weight:bold;
-
-border:none;
-border-radius:15px;
-
-display:block;
-
-box-shadow:0 0 15px black;
+outline:none;
 }
 
 /* TITLE */
@@ -102,7 +64,6 @@ top:90px;
 left:15px;
 
 font-size:22px;
-
 color:white;
 
 z-index:200;
@@ -123,7 +84,7 @@ border-radius:15px;
 
 color:white;
 
-font-size:17px;
+font-size:18px;
 
 z-index:200;
 }
@@ -181,16 +142,6 @@ right:25px;
 box-shadow:0 0 35px yellow;
 }
 
-/* WALLS */
-
-.wall{
-position:absolute;
-
-background:#6d4c41;
-
-border-radius:12px;
-}
-
 /* TREES */
 
 .tree{
@@ -204,79 +155,34 @@ background:green;
 border-radius:50%;
 }
 
-/* MOBILE CONTROLS */
+/* WALLS */
 
-#controls{
+.wall{
 position:absolute;
 
-bottom:20px;
-left:0;
+background:#6d4c41;
 
-width:100%;
-height:230px;
-
-z-index:300;
+border-radius:12px;
 }
 
-.btn{
+/* SAVE */
+
+#save{
 position:absolute;
+bottom:15px;
+left:15px;
 
-width:80px;
-height:80px;
+font-size:18px;
 
-border:none;
+background:rgba(0,0,0,0.6);
 
-border-radius:50%;
+padding:10px;
 
-background:rgba(255,255,255,0.25);
+border-radius:12px;
 
 color:white;
 
-font-size:36px;
-
-backdrop-filter:blur(5px);
-}
-
-#up{
-left:90px;
-bottom:140px;
-}
-
-#left{
-left:10px;
-bottom:60px;
-}
-
-#right{
-left:170px;
-bottom:60px;
-}
-
-#down{
-left:90px;
-bottom:-20px;
-}
-
-#attack{
-right:25px;
-bottom:60px;
-
-width:105px;
-height:105px;
-
-background:orange;
-
-font-size:42px;
-}
-
-/* HIDE MOBILE BUTTONS ON PC */
-
-@media (min-width:900px){
-
-#controls{
-display:none;
-}
-
+z-index:300;
 }
 
 </style>
@@ -284,52 +190,27 @@ display:none;
 
 <body>
 
-<div id="game">
-
-<!-- DOWNLOAD BUTTON -->
-
-<a href="index.html" download>
-<button id="download">DOWNLOAD</button>
-</a>
-
-<!-- TITLE -->
+<div id="game" tabindex="0">
 
 <div id="title">FOREST HUNTER</div>
-
-<!-- UI -->
 
 <div id="ui">
 LEVEL: 1<br>
 KILLS: 0/1
 </div>
 
-<!-- TUTORIAL -->
-
 <div id="tutorial">
-💻 W A S D / ARROWS<br>
+💻 W A S D = MOVE<br>
 ⚔️ SPACE = ATTACK<br>
-📱 TOUCH BUTTONS
+💾 AUTO SAVE
 </div>
-
-<!-- PLAYER -->
 
 <div id="player"></div>
 
-<!-- PORTAL -->
-
 <div id="portal"></div>
 
-<!-- MOBILE CONTROLS -->
-
-<div id="controls">
-
-<button class="btn" id="up">↑</button>
-<button class="btn" id="left">←</button>
-<button class="btn" id="right">→</button>
-<button class="btn" id="down">↓</button>
-
-<button class="btn" id="attack">⚔️</button>
-
+<div id="save">
+Game Saved ✔
 </div>
 
 </div>
@@ -340,14 +221,33 @@ const game=document.getElementById("game");
 const player=document.getElementById("player");
 const ui=document.getElementById("ui");
 
+/* FOCUS */
+
+game.focus();
+
+window.onclick=()=>{
+game.focus();
+};
+
+/* SAVE SYSTEM */
+
+let savedLevel=localStorage.getItem("forestLevel");
+
+let level=savedLevel ? parseInt(savedLevel) : 1;
+
+let kills=0;
+
+/* PLAYER */
+
 let x=60;
 let y=300;
 
-let level=1;
-let kills=0;
+/* ARRAYS */
 
 let enemies=[];
 let walls=[];
+
+/* RANDOM */
 
 function random(min,max){
 return Math.floor(Math.random()*(max-min))+min;
@@ -366,7 +266,7 @@ let tree=document.createElement("div");
 tree.className="tree";
 
 tree.style.left=random(0,window.innerWidth-70)+"px";
-tree.style.top=random(150,window.innerHeight-200)+"px";
+tree.style.top=random(150,window.innerHeight-150)+"px";
 
 game.appendChild(tree);
 }
@@ -386,12 +286,13 @@ let wall=document.createElement("div");
 
 wall.className="wall";
 
-let wx=random(50,window.innerWidth-200);
-let wy=random(180,window.innerHeight-250);
+let wx=random(100,window.innerWidth-250);
+let wy=random(180,window.innerHeight-200);
 
 wall.style.left=wx+"px";
 wall.style.top=wy+"px";
-wall.style.width=random(80,180)+"px";
+
+wall.style.width=random(100,180)+"px";
 wall.style.height="22px";
 
 game.appendChild(wall);
@@ -419,8 +320,8 @@ let enemy=document.createElement("div");
 
 enemy.className="enemy";
 
-let ex=random(120,window.innerWidth-120);
-let ey=random(220,window.innerHeight-250);
+let ex=random(150,window.innerWidth-120);
+let ey=random(220,window.innerHeight-180);
 
 enemy.style.left=ex+"px";
 enemy.style.top=ey+"px";
@@ -494,8 +395,8 @@ if(y<150)y=150;
 if(x>window.innerWidth-55)
 x=window.innerWidth-55;
 
-if(y>window.innerHeight-100)
-y=window.innerHeight-100;
+if(y>window.innerHeight-55)
+y=window.innerHeight-55;
 
 updatePlayer();
 
@@ -535,7 +436,7 @@ updateUI();
 });
 }
 
-/* PORTAL */
+/* NEXT LEVEL */
 
 function checkPortal(){
 
@@ -548,6 +449,13 @@ kills>=level
 if(level<28){
 
 level++;
+
+/* SAVE */
+
+localStorage.setItem(
+"forestLevel",
+level
+);
 
 x=60;
 y=300;
@@ -562,36 +470,27 @@ ui.innerHTML="🏆 YOU WIN 🏆";
 }
 }
 
-/* PHONE */
+/* PC CONTROLS */
 
-document.getElementById("up").ontouchstart=()=>move(0,-25);
-document.getElementById("down").ontouchstart=()=>move(0,25);
-document.getElementById("left").ontouchstart=()=>move(-25,0);
-document.getElementById("right").ontouchstart=()=>move(25,0);
-
-document.getElementById("attack").ontouchstart=()=>attack();
-
-/* PC */
-
-window.addEventListener("keydown",function(e){
+game.addEventListener("keydown",function(e){
 
 e.preventDefault();
 
 const key=e.key.toLowerCase();
 
-if(key==="w" || key==="arrowup"){
+if(key==="w"){
 move(0,-25);
 }
 
-if(key==="s" || key==="arrowdown"){
+if(key==="s"){
 move(0,25);
 }
 
-if(key==="a" || key==="arrowleft"){
+if(key==="a"){
 move(-25,0);
 }
 
-if(key==="d" || key==="arrowright"){
+if(key==="d"){
 move(25,0);
 }
 
@@ -601,17 +500,17 @@ attack();
 
 });
 
-/* ENEMIES AI */
+/* ENEMY AI */
 
 function enemyAI(){
 
 enemies.forEach(enemy=>{
 
-if(enemy.x<x)enemy.x+=1+level*0.15;
-if(enemy.x>x)enemy.x-=1+level*0.15;
+if(enemy.x<x)enemy.x+=1+level*0.2;
+if(enemy.x>x)enemy.x-=1+level*0.2;
 
-if(enemy.y<y)enemy.y+=1+level*0.15;
-if(enemy.y>y)enemy.y-=1+level*0.15;
+if(enemy.y<y)enemy.y+=1+level*0.2;
+if(enemy.y>y)enemy.y-=1+level*0.2;
 
 enemy.el.style.left=enemy.x+"px";
 enemy.el.style.top=enemy.y+"px";
@@ -630,6 +529,8 @@ updatePlayer();
 }
 
 setInterval(enemyAI,30);
+
+/* START */
 
 loadLevel();
 updatePlayer();
