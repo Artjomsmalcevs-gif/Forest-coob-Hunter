@@ -41,8 +41,6 @@ background-size:cover;
 background-position:center;
 }
 
-/* TITLE */
-
 #title{
 position:absolute;
 top:15px;
@@ -59,8 +57,6 @@ text-shadow:3px 3px black;
 z-index:200;
 }
 
-/* UI */
-
 #ui{
 position:absolute;
 top:90px;
@@ -71,8 +67,6 @@ color:white;
 
 z-index:200;
 }
-
-/* NICKNAME */
 
 #nicknameBox{
 position:absolute;
@@ -90,32 +84,43 @@ color:white;
 z-index:500;
 }
 
-/* PVP BUTTON */
+#pvpBtn,
+#leaveOnlineBtn,
+#joinOnlineBtn{
 
-#pvpBtn{
 position:absolute;
-top:70px;
+
 right:20px;
 
 padding:12px 20px;
 
-background:red;
-color:white;
-
 border:none;
 border-radius:15px;
 
-font-size:20px;
+font-size:18px;
 font-weight:bold;
 
-border:3px solid white;
-
-box-shadow:0 0 15px red;
+color:white;
 
 z-index:9999;
+
 }
 
-/* PLAYER */
+#pvpBtn{
+top:70px;
+background:red;
+}
+
+#leaveOnlineBtn{
+top:130px;
+background:#444;
+}
+
+#joinOnlineBtn{
+top:190px;
+background:green;
+display:none;
+}
 
 #player{
 position:absolute;
@@ -132,8 +137,6 @@ box-shadow:0 0 20px cyan;
 z-index:10;
 }
 
-/* ONLINE PLAYER */
-
 .onlinePlayer{
 position:absolute;
 
@@ -146,8 +149,6 @@ border-radius:15px;
 
 box-shadow:0 0 20px magenta;
 }
-
-/* CONTROLS */
 
 #controls{
 position:absolute;
@@ -208,8 +209,6 @@ background:orange;
 font-size:42px;
 }
 
-/* MUSIC */
-
 #music{
 position:fixed;
 top:10px;
@@ -217,12 +216,10 @@ left:10px;
 z-index:999999;
 }
 
-/* PHONE */
-
 @media screen and (orientation:portrait){
 
 body::before{
-content:"🔄 ПОВЕРНИ ТЕЛЕФОН ГОРИЗОНТАЛЬНО";
+content:"🔄 ПОВЕРНИ ТЕЛЕФОН";
 
 position:fixed;
 top:0;
@@ -250,8 +247,6 @@ display:none;
 
 }
 
-/* PC */
-
 @media (min-width:900px){
 
 #controls{
@@ -273,11 +268,21 @@ display:none;
 
 <div id="game">
 
-<div id="title">CUBE FOREST ADVENTURE ONLINE</div>
+<div id="title">
+CUBE FOREST ADVENTURE ONLINE
+</div>
 
 <div id="nicknameBox"></div>
 
 <button id="pvpBtn">PVP</button>
+
+<button id="leaveOnlineBtn">
+ВЫЙТИ ИЗ ONLINE
+</button>
+
+<button id="joinOnlineBtn">
+ВОЙТИ В ONLINE
+</button>
 
 <div id="ui">
 🌍 ONLINE MODE
@@ -386,6 +391,8 @@ document.getElementById("down").ontouchstart=()=>move(0,25);
 document.getElementById("left").ontouchstart=()=>move(-25,0);
 document.getElementById("right").ontouchstart=()=>move(25,0);
 
+document.getElementById("attack").ontouchstart=()=>attack();
+
 /* PC */
 
 window.addEventListener("keydown",function(e){
@@ -396,6 +403,8 @@ if(key==="w" || key==="arrowup") move(0,-25);
 if(key==="s" || key==="arrowdown") move(0,25);
 if(key==="a" || key==="arrowleft") move(-25,0);
 if(key==="d" || key==="arrowright") move(25,0);
+
+if(e.code==="Space") attack();
 
 });
 
@@ -443,6 +452,7 @@ document.getElementById("game").appendChild(enemy);
 /* PVP */
 
 let inPVP=false;
+let pvpHits=0;
 
 /* SEND REQUEST */
 
@@ -476,8 +486,7 @@ if(accept){
 
 set(ref(db,"pvpRooms/"+data.from+"_"+nickname),{
 player1:data.from,
-player2:nickname,
-started:true
+player2:nickname
 });
 
 alert("✅ PVP ПРИНЯТ");
@@ -500,6 +509,8 @@ if(inPVP)return;
 
 inPVP=true;
 
+pvpHits=0;
+
 document.getElementById("game").style.background=
 "linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
 
@@ -511,7 +522,7 @@ y=300;
 updatePlayer();
 
 document.getElementById("ui").innerHTML=
-"⚔️ PVP MODE";
+"⚔️ PVP MODE<br>HITS: 0/10";
 
 alert("⚔️ PVP НАЧАЛСЯ");
 
@@ -542,7 +553,7 @@ startPVP();
 
 /* ATTACK */
 
-document.getElementById("attack").onclick=function(){
+function attack(){
 
 if(!inPVP)return;
 
@@ -556,17 +567,74 @@ let dy=Math.abs(ey-y);
 
 if(dx<90 && dy<90){
 
+pvpHits++;
+
 enemy.style.background="yellow";
 
 setTimeout(()=>{
 enemy.style.background="magenta";
 },100);
 
-alert("⚔️ ПОПАДАНИЕ!");
+document.getElementById("ui").innerHTML=
+"⚔️ PVP MODE<br>HITS: "+pvpHits+"/10";
+
+if(pvpHits>=10){
+
+alert("🏆 ТЫ ВЫИГРАЛ!");
+
+exitPVP();
+
+}
 
 }
 
 });
+
+}
+
+/* EXIT PVP */
+
+function exitPVP(){
+
+inPVP=false;
+
+pvpHits=0;
+
+document.getElementById("game").style.background=
+"linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
+
+document.getElementById("game").style.backgroundSize="cover";
+
+document.getElementById("ui").innerHTML=
+"🌍 ONLINE MODE";
+
+}
+
+/* LEAVE ONLINE */
+
+document.getElementById("leaveOnlineBtn").onclick=function(){
+
+remove(ref(db,"players/"+nickname));
+
+alert("❌ ТЫ ВЫШЕЛ ИЗ ONLINE");
+
+document.getElementById("leaveOnlineBtn").style.display="none";
+
+document.getElementById("joinOnlineBtn").style.display="block";
+
+};
+
+/* JOIN ONLINE */
+
+document.getElementById("joinOnlineBtn").onclick=function(){
+
+syncPlayer();
+
+alert("✅ ТЫ СНОВА В ONLINE");
+
+document.getElementById("joinOnlineBtn").style.display="none";
+
+document.getElementById("leaveOnlineBtn").style.display="block";
 
 };
 
