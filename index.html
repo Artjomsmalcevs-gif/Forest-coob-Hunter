@@ -386,7 +386,19 @@ let y=300;
 
 let level=1;
 let kills=0;
+/* SAVE SYSTEM */
 
+const savedLevel = localStorage.getItem("forestLevel");
+
+if(savedLevel){
+level=parseInt(savedLevel);
+}
+
+function saveGame(){
+
+localStorage.setItem("forestLevel",level);
+
+}
 let enemies=[];
 let walls=[];
 
