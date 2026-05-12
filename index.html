@@ -672,13 +672,32 @@ alert(
 "ADMIN PANEL ENABLED\n\n"+
 "1 = NEXT LEVEL\n"+
 "2 = KILL ALL\n"+
-"3 = TELEPORT"
+"3 = TELEPORT\n"+
+"4 = RESET SAVE"
 );
 
 }
 
 }
 
+/* RESET SAVE */
+
+if(key==="4"){
+
+localStorage.removeItem("forestLevel");
+
+level=1;
+
+kills=0;
+
+loadLevel();
+
+updateUI();
+
+alert("SAVE RESET");
+
+}
+  
 /* ADMIN OFF */
 
 if(!admin)return;
