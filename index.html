@@ -652,28 +652,36 @@ updatePlayer();
 
 let admin=false;
 
-window.addEventListener("keydown",(e)=>{
+window.addEventListener("keydown",function(e){
 
-if(e.key.toLowerCase()==="p"){
+const key=e.key.toLowerCase();
+
+/* OPEN ADMIN */
+
+if(key==="p"){
 
 admin=!admin;
 
 if(admin){
 
 alert(
-"ADMIN PANEL\n\n"+
-"1 = LEVEL UP\n"+
+"ADMIN PANEL ENABLED\n\n"+
+"1 = NEXT LEVEL\n"+
 "2 = KILL ALL\n"+
-"3 = TELEPORT TO PORTAL"
+"3 = TELEPORT"
 );
 
 }
 
 }
 
+/* ADMIN OFF */
+
 if(!admin)return;
 
-if(e.key==="1"){
+/* NEXT LEVEL */
+
+if(key==="1"){
 
 level++;
 
@@ -681,9 +689,13 @@ saveGame();
 
 loadLevel();
 
+updateUI();
+
 }
 
-if(e.key==="2"){
+/* KILL ALL */
+
+if(key==="2"){
 
 enemies.forEach(enemy=>enemy.el.remove());
 
@@ -695,7 +707,9 @@ updateUI();
 
 }
 
-if(e.key==="3"){
+/* TELEPORT */
+
+if(key==="3"){
 
 x=window.innerWidth-140;
 y=300;
