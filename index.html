@@ -581,15 +581,19 @@ Math.abs(y-300)<120 &&
 kills>=level
 ){
 
+function checkPortal(){
+
+if(
+x>window.innerWidth-130 &&
+Math.abs(y-300)<120 &&
+kills>=level
+){
+
 if(level<28){
+
 level++;
-}
 
 saveGame();
-
-loadLevel();
-
-updateUI();
 
 x=60;
 y=300;
@@ -600,7 +604,9 @@ updatePlayer();
 }else{
 
 ui.innerHTML="🏆 YOU WIN 🏆";
+
 }
+
 }
 }
 
@@ -680,24 +686,6 @@ alert(
 
 }
 
-/* RESET SAVE */
-
-if(key==="4"){
-
-localStorage.removeItem("forestLevel");
-
-level=1;
-
-kills=0;
-
-loadLevel();
-
-updateUI();
-
-alert("SAVE RESET");
-
-}
-  
 /* ADMIN OFF */
 
 if(!admin)return;
@@ -706,7 +694,9 @@ if(!admin)return;
 
 if(key==="1"){
 
+if(level<28){
 level++;
+}
 
 saveGame();
 
@@ -738,6 +728,25 @@ x=window.innerWidth-140;
 y=300;
 
 updatePlayer();
+
+}
+
+/* RESET SAVE */
+
+if(key==="4"){
+
+localStorage.removeItem("forestLevel");
+
+level=1;
+kills=0;
+
+saveGame();
+
+loadLevel();
+
+updateUI();
+
+alert("SAVE RESET");
 
 }
 
