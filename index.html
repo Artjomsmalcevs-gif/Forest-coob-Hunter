@@ -31,7 +31,6 @@ top:0;
 left:0;
 width:100vw;
 height:100vh;
-overflow:hidden;
 
 background:
 linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),
@@ -39,6 +38,8 @@ url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&au
 
 background-size:cover;
 background-position:center;
+
+overflow:hidden;
 }
 
 #title{
@@ -64,7 +65,7 @@ right:20px;
 
 background:rgba(0,0,0,0.5);
 
-padding:10px 15px;
+padding:10px 16px;
 
 border-radius:14px;
 
@@ -112,6 +113,42 @@ background:magenta;
 border-radius:15px;
 
 box-shadow:0 0 20px magenta;
+}
+
+#pvpBtn,
+#leaveBtn,
+#joinBtn{
+
+position:absolute;
+right:20px;
+
+padding:12px 18px;
+
+border:none;
+border-radius:14px;
+
+font-size:18px;
+font-weight:bold;
+
+color:white;
+
+z-index:999;
+}
+
+#pvpBtn{
+top:70px;
+background:red;
+}
+
+#leaveBtn{
+top:130px;
+background:#444;
+}
+
+#joinBtn{
+top:190px;
+background:green;
+display:none;
 }
 
 #controls{
@@ -172,42 +209,6 @@ height:105px;
 
 background:orange;
 font-size:42px;
-}
-
-#pvpBtn,
-#leaveBtn,
-#joinBtn{
-
-position:absolute;
-right:20px;
-
-padding:12px 18px;
-
-border:none;
-border-radius:14px;
-
-font-size:18px;
-font-weight:bold;
-
-color:white;
-
-z-index:999;
-}
-
-#pvpBtn{
-top:70px;
-background:red;
-}
-
-#leaveBtn{
-top:130px;
-background:#444;
-}
-
-#joinBtn{
-top:190px;
-background:green;
-display:none;
 }
 
 #music{
@@ -329,8 +330,10 @@ let y=300;
 
 let online=true;
 
-let inPVP=false;
+/* PVP */
 
+let inPVP=false;
+let currentRoom=null;
 let hits=0;
 
 /* UPDATE PLAYER */
@@ -419,14 +422,11 @@ set(ref(db,"players/"+nickname),{
 nickname:nickname,
 x:x,
 y:y,
-hits:hits,
 pvp:inPVP
 
 });
 
 }
-
-/* AUTO UPDATE */
 
 setInterval(()=>{
 
@@ -465,7 +465,7 @@ document.getElementById("game").appendChild(enemy);
 
 });
 
-/* PVP */
+/* SEND PVP */
 
 document.getElementById("pvpBtn").onclick=function(){
 
@@ -473,17 +473,19 @@ let enemyNick=prompt("ВВЕДИ NICKNAME");
 
 if(!enemyNick)return;
 
-set(ref(db,"pvp/"+enemyNick),{
+set(ref(db,"pvpRequests/"+enemyNick),{
+
 from:nickname
+
 });
 
 alert("⚔️ ЗАПРОС ОТПРАВЛЕН");
 
 };
 
-/* RECEIVE PVP */
+/* RECEIVE REQUEST */
 
-onValue(ref(db,"pvp/"+nickname),snapshot=>{
+onValue(ref(db,"pvpRequests/"+nickname),snapshot=>{
 
 const data=snapshot.val();
 
@@ -495,19 +497,16 @@ data.from+" ХОЧЕТ PVP"
 
 if(accept){
 
-inPVP=true;
+currentRoom=
+data.from+"_"+nickname;
 
-hits=0;
+set(ref(db,"pvpRooms/"+currentRoom),{
 
-document.getElementById("ui").innerHTML=
-"⚔️ PVP MODE<br>HITS: 0/10";
+player1:data.from,
+player2:nickname,
+started:true
 
-document.getElementById("game").style.background=
-"linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
-
-document.getElementById("game").style.backgroundSize="cover";
-
-alert("⚔️ PVP НАЧАЛСЯ");
+});
 
 }else{
 
@@ -515,9 +514,80 @@ alert("❌ PVP ОТКЛОНЁН");
 
 }
 
-remove(ref(db,"pvp/"+nickname));
+remove(ref(db,"pvpRequests/"+nickname));
 
 });
+
+/* WATCH ROOMS */
+
+onValue(ref(db,"pvpRooms"),snapshot=>{
+
+const rooms=snapshot.val();
+
+if(!rooms)return;
+
+Object.keys(rooms).forEach(roomId=>{
+
+const room=rooms[roomId];
+
+if(
+room.player1===nickname ||
+room.player2===nickname
+){
+
+if(!inPVP){
+
+startPVP(roomId);
+
+}
+
+}
+
+});
+
+});
+
+/* START PVP */
+
+function startPVP(roomId){
+
+inPVP=true;
+
+currentRoom=roomId;
+
+hits=0;
+
+/* PVP MAP */
+
+document.getElementById("game").style.background=
+"linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
+
+document.getElementById("game").style.backgroundSize="cover";
+
+/* SPAWN */
+
+if(roomId.startsWith(nickname)){
+
+x=150;
+y=300;
+
+}else{
+
+x=700;
+y=300;
+
+}
+
+updatePlayer();
+
+/* UI */
+
+document.getElementById("ui").innerHTML=
+"⚔️ PVP MODE<br>HITS: 0/10";
+
+alert("⚔️ PVP НАЧАЛСЯ");
+
+}
 
 /* ATTACK */
 
@@ -537,36 +607,59 @@ if(dx<90 && dy<90){
 
 hits++;
 
-document.getElementById("ui").innerHTML=
-"⚔️ PVP MODE<br>HITS: "+hits+"/10";
-
 enemy.style.background="yellow";
 
 setTimeout(()=>{
 enemy.style.background="magenta";
 },100);
 
+document.getElementById("ui").innerHTML=
+"⚔️ PVP MODE<br>HITS: "+hits+"/10";
+
 if(hits>=10){
 
-alert("🏆 ТЫ ВЫИГРАЛ!");
+alert("🏆 ТЫ ПОБЕДИЛ!");
 
-inPVP=false;
-
-hits=0;
-
-document.getElementById("ui").innerHTML=
-"🌍 ONLINE MODE";
-
-document.getElementById("game").style.background=
-"linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
-
-document.getElementById("game").style.backgroundSize="cover";
+endPVP();
 
 }
 
 }
 
 });
+
+}
+
+/* END PVP */
+
+function endPVP(){
+
+inPVP=false;
+
+hits=0;
+
+if(currentRoom){
+
+remove(ref(db,"pvpRooms/"+currentRoom));
+
+}
+
+/* NORMAL MAP */
+
+document.getElementById("game").style.background=
+"linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
+
+document.getElementById("game").style.backgroundSize="cover";
+
+x=60;
+y=300;
+
+updatePlayer();
+
+document.getElementById("ui").innerHTML=
+"🌍 ONLINE MODE";
+
+alert("🏠 ВОЗВРАТ В МИР");
 
 }
 
@@ -584,7 +677,7 @@ document.getElementById("leaveBtn").style.display="none";
 
 document.getElementById("joinBtn").style.display="block";
 
-alert("❌ ТЫ ВЫШЕЛ ИЗ ONLINE");
+alert("❌ OFFLINE MODE");
 
 };
 
@@ -611,7 +704,7 @@ document.getElementById("leaveBtn").style.display="block";
 
 document.getElementById("joinBtn").style.display="none";
 
-alert("✅ ONLINE ВКЛЮЧЕН");
+alert("✅ ONLINE MODE");
 
 };
 
