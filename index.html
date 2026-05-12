@@ -10,7 +10,7 @@ initial-scale=1.0,
 maximum-scale=1.0,
 user-scalable=no">
 
-<title>Cube Forest Adventure Online</title>
+<title>Cube Forest Online</title>
 
 <style>
 
@@ -34,7 +34,7 @@ height:100vh;
 overflow:hidden;
 
 background:
-linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),
+linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),
 url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop');
 
 background-size:cover;
@@ -54,7 +54,25 @@ color:lime;
 
 text-shadow:3px 3px black;
 
-z-index:200;
+z-index:100;
+}
+
+#nicknameBox{
+position:absolute;
+top:15px;
+right:20px;
+
+background:rgba(0,0,0,0.5);
+
+padding:10px 15px;
+
+border-radius:14px;
+
+color:white;
+
+font-size:20px;
+
+z-index:100;
 }
 
 #ui{
@@ -65,60 +83,7 @@ left:15px;
 font-size:22px;
 color:white;
 
-z-index:200;
-}
-
-#nicknameBox{
-position:absolute;
-top:15px;
-right:20px;
-
-background:rgba(0,0,0,0.5);
-
-padding:10px 16px;
-
-border-radius:14px;
-
-color:white;
-
-z-index:500;
-}
-
-#pvpBtn,
-#leaveOnlineBtn,
-#joinOnlineBtn{
-
-position:absolute;
-right:20px;
-
-padding:12px 20px;
-
-border:none;
-border-radius:15px;
-
-font-size:18px;
-font-weight:bold;
-
-color:white;
-
-z-index:9999;
-
-}
-
-#pvpBtn{
-top:70px;
-background:red;
-}
-
-#leaveOnlineBtn{
-top:130px;
-background:#444;
-}
-
-#joinOnlineBtn{
-top:190px;
-background:green;
-display:none;
+z-index:100;
 }
 
 #player{
@@ -133,7 +98,7 @@ border-radius:15px;
 
 box-shadow:0 0 20px cyan;
 
-z-index:10;
+z-index:50;
 }
 
 .onlinePlayer{
@@ -151,6 +116,7 @@ box-shadow:0 0 20px magenta;
 
 #controls{
 position:absolute;
+
 bottom:20px;
 left:0;
 
@@ -208,42 +174,47 @@ background:orange;
 font-size:42px;
 }
 
+#pvpBtn,
+#leaveBtn,
+#joinBtn{
+
+position:absolute;
+right:20px;
+
+padding:12px 18px;
+
+border:none;
+border-radius:14px;
+
+font-size:18px;
+font-weight:bold;
+
+color:white;
+
+z-index:999;
+}
+
+#pvpBtn{
+top:70px;
+background:red;
+}
+
+#leaveBtn{
+top:130px;
+background:#444;
+}
+
+#joinBtn{
+top:190px;
+background:green;
+display:none;
+}
+
 #music{
 position:fixed;
 top:10px;
 left:10px;
-z-index:999999;
-}
-
-@media screen and (orientation:portrait){
-
-body::before{
-content:"🔄 ПОВЕРНИ ТЕЛЕФОН";
-
-position:fixed;
-top:0;
-left:0;
-
-width:100%;
-height:100%;
-
-background:black;
-color:white;
-
-display:flex;
-justify-content:center;
-align-items:center;
-
-font-size:30px;
-text-align:center;
-
-z-index:999999;
-}
-
-#game{
-display:none;
-}
-
+z-index:99999;
 }
 
 @media (min-width:900px){
@@ -268,24 +239,26 @@ display:none;
 <div id="game">
 
 <div id="title">
-CUBE FOREST ADVENTURE ONLINE
+CUBE FOREST ONLINE
 </div>
 
 <div id="nicknameBox"></div>
 
-<button id="pvpBtn">PVP</button>
-
-<button id="leaveOnlineBtn">
-ВЫЙТИ ИЗ ONLINE
-</button>
-
-<button id="joinOnlineBtn">
-ВОЙТИ В ONLINE
-</button>
-
 <div id="ui">
 🌍 ONLINE MODE
 </div>
+
+<button id="pvpBtn">
+PVP
+</button>
+
+<button id="leaveBtn">
+ВЫЙТИ ИЗ ONLINE
+</button>
+
+<button id="joinBtn">
+ВОЙТИ В ONLINE
+</button>
 
 <div id="player"></div>
 
@@ -358,7 +331,9 @@ let online=true;
 
 let inPVP=false;
 
-let pvpHits=0;
+let hits=0;
+
+/* UPDATE PLAYER */
 
 function updatePlayer(){
 
@@ -417,17 +392,41 @@ attack();
 
 });
 
+/* MUSIC */
+
+const music=document.getElementById("music");
+
+function startMusic(){
+
+music.volume=0.5;
+
+music.play();
+
+document.removeEventListener("click",startMusic);
+document.removeEventListener("touchstart",startMusic);
+
+}
+
+document.addEventListener("click",startMusic);
+document.addEventListener("touchstart",startMusic);
+
 /* ONLINE */
 
 function syncPlayer(){
 
 set(ref(db,"players/"+nickname),{
+
+nickname:nickname,
 x:x,
 y:y,
-nickname:nickname
+hits:hits,
+pvp:inPVP
+
 });
 
 }
+
+/* AUTO UPDATE */
 
 setInterval(()=>{
 
@@ -437,7 +436,7 @@ syncPlayer();
 
 },100);
 
-/* SHOW OTHER PLAYERS */
+/* SHOW PLAYERS */
 
 onValue(ref(db,"players"),snapshot=>{
 
@@ -458,21 +457,23 @@ enemy.className="onlinePlayer";
 enemy.style.left=p.x+"px";
 enemy.style.top=p.y+"px";
 
+enemy.dataset.nickname=p.nickname;
+
 document.getElementById("game").appendChild(enemy);
 
 });
 
 });
 
-/* PVP BUTTON */
+/* PVP */
 
 document.getElementById("pvpBtn").onclick=function(){
 
-let enemyNick=prompt("ВВЕДИ NICKNAME ИГРОКА");
+let enemyNick=prompt("ВВЕДИ NICKNAME");
 
 if(!enemyNick)return;
 
-set(ref(db,"pvpRequests/"+enemyNick),{
+set(ref(db,"pvp/"+enemyNick),{
 from:nickname
 });
 
@@ -482,24 +483,31 @@ alert("⚔️ ЗАПРОС ОТПРАВЛЕН");
 
 /* RECEIVE PVP */
 
-onValue(ref(db,"pvpRequests/"+nickname),snapshot=>{
+onValue(ref(db,"pvp/"+nickname),snapshot=>{
 
 const data=snapshot.val();
 
 if(!data)return;
 
 let accept=confirm(
-"⚔️ "+data.from+" ХОЧЕТ PVP"
+data.from+" ХОЧЕТ PVP"
 );
 
 if(accept){
 
-set(ref(db,"pvpRooms/"+data.from+"_"+nickname),{
-player1:data.from,
-player2:nickname
-});
+inPVP=true;
 
-alert("✅ PVP ПРИНЯТ");
+hits=0;
+
+document.getElementById("ui").innerHTML=
+"⚔️ PVP MODE<br>HITS: 0/10";
+
+document.getElementById("game").style.background=
+"linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
+
+document.getElementById("game").style.backgroundSize="cover";
+
+alert("⚔️ PVP НАЧАЛСЯ");
 
 }else{
 
@@ -507,128 +515,7 @@ alert("❌ PVP ОТКЛОНЁН");
 
 }
 
-remove(ref(db,"pvpRequests/"+nickname));
-
-});
-
-/* START PVP */
-
-function startPVP(){
-
-if(inPVP)return;
-
-inPVP=true;
-
-pvpHits=0;
-
-document.getElementById("game").style.background=
-"linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
-
-document.getElementById("game").style.backgroundSize="cover";
-
-x=100;
-y=300;
-
-updatePlayer();
-
-document.getElementById("ui").innerHTML=
-"⚔️ PVP MODE<br>HITS: 0/10";
-
-alert("⚔️ PVP НАЧАЛСЯ");
-
-}
-
-/* EXIT PVP */
-
-function exitPVP(){
-
-inPVP=false;
-
-pvpHits=0;
-
-/* DELETE ROOM */
-
-onValue(ref(db,"pvpRooms"),snapshot=>{
-
-const rooms=snapshot.val();
-
-if(!rooms)return;
-
-Object.keys(rooms).forEach(roomId=>{
-
-const room=rooms[roomId];
-
-if(
-room.player1===nickname ||
-room.player2===nickname
-){
-
-remove(ref(db,"pvpRooms/"+roomId));
-
-}
-
-});
-
-},{onlyOnce:true});
-
-/* NORMAL MAP */
-
-document.getElementById("game").style.background=
-"linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
-
-document.getElementById("game").style.backgroundSize="cover";
-
-x=60;
-y=300;
-
-updatePlayer();
-
-document.getElementById("ui").innerHTML=
-"🌍 ONLINE MODE";
-
-alert("🏠 ТЫ ВЕРНУЛСЯ В ОБЫЧНЫЙ МИР");
-
-}
-
-/* ROOM CHECK */
-
-onValue(ref(db,"pvpRooms"),snapshot=>{
-
-const rooms=snapshot.val();
-
-if(!rooms){
-
-if(inPVP){
-exitPVP();
-}
-
-return;
-}
-
-let foundRoom=false;
-
-Object.values(rooms).forEach(room=>{
-
-if(
-room.player1===nickname ||
-room.player2===nickname
-){
-
-foundRoom=true;
-
-if(!inPVP){
-startPVP();
-}
-
-}
-
-});
-
-if(!foundRoom && inPVP){
-
-exitPVP();
-
-}
+remove(ref(db,"pvp/"+nickname));
 
 });
 
@@ -648,7 +535,10 @@ let dy=Math.abs(ey-y);
 
 if(dx<90 && dy<90){
 
-pvpHits++;
+hits++;
+
+document.getElementById("ui").innerHTML=
+"⚔️ PVP MODE<br>HITS: "+hits+"/10";
 
 enemy.style.background="yellow";
 
@@ -656,14 +546,21 @@ setTimeout(()=>{
 enemy.style.background="magenta";
 },100);
 
-document.getElementById("ui").innerHTML=
-"⚔️ PVP MODE<br>HITS: "+pvpHits+"/10";
-
-if(pvpHits>=10){
+if(hits>=10){
 
 alert("🏆 ТЫ ВЫИГРАЛ!");
 
-exitPVP();
+inPVP=false;
+
+hits=0;
+
+document.getElementById("ui").innerHTML=
+"🌍 ONLINE MODE";
+
+document.getElementById("game").style.background=
+"linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
+
+document.getElementById("game").style.backgroundSize="cover";
 
 }
 
@@ -673,9 +570,9 @@ exitPVP();
 
 }
 
-/* LEAVE ONLINE */
+/* EXIT ONLINE */
 
-document.getElementById("leaveOnlineBtn").onclick=function(){
+document.getElementById("leaveBtn").onclick=function(){
 
 online=false;
 
@@ -683,47 +580,40 @@ remove(ref(db,"players/"+nickname));
 
 document.querySelectorAll(".onlinePlayer").forEach(e=>e.remove());
 
+document.getElementById("leaveBtn").style.display="none";
+
+document.getElementById("joinBtn").style.display="block";
+
 alert("❌ ТЫ ВЫШЕЛ ИЗ ONLINE");
-
-document.getElementById("leaveOnlineBtn").style.display="none";
-
-document.getElementById("joinOnlineBtn").style.display="block";
 
 };
 
 /* JOIN ONLINE */
 
-document.getElementById("joinOnlineBtn").onclick=function(){
+document.getElementById("joinBtn").onclick=function(){
+
+let newNick=prompt("ВВЕДИ NICKNAME");
+
+if(!newNick)return;
+
+nickname=newNick;
+
+localStorage.setItem("nickname",nickname);
+
+document.getElementById("nicknameBox").innerHTML=
+"👤 "+nickname;
 
 online=true;
 
 syncPlayer();
 
-alert("✅ ТЫ СНОВА В ONLINE");
+document.getElementById("leaveBtn").style.display="block";
 
-document.getElementById("joinOnlineBtn").style.display="none";
+document.getElementById("joinBtn").style.display="none";
 
-document.getElementById("leaveOnlineBtn").style.display="block";
+alert("✅ ONLINE ВКЛЮЧЕН");
 
 };
-
-/* MUSIC */
-
-const music=document.getElementById("music");
-
-function startMusic(){
-
-music.volume=0.5;
-
-music.play();
-
-document.removeEventListener("click",startMusic);
-document.removeEventListener("touchstart",startMusic);
-
-}
-
-document.addEventListener("click",startMusic);
-document.addEventListener("touchstart",startMusic);
 
 /* START */
 
