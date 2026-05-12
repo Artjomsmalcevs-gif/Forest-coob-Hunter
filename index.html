@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
 
 <meta charset="UTF-8">
@@ -11,17 +11,9 @@ maximum-scale=1.0,
 user-scalable=no,
 viewport-fit=cover">
 
-<meta name="screen-orientation" content="landscape">
-
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
 <title>Cube Forest Adventure</title>
 
-<link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.png">
-<link rel="apple-touch-icon" href="icon.png">
 
 <style>
 
@@ -34,7 +26,6 @@ height:100%;
 background:black;
 font-family:Arial;
 touch-action:none;
-overscroll-behavior:none;
 }
 
 #game{
@@ -42,23 +33,23 @@ position:fixed;
 top:0;
 left:0;
 width:100vw;
-height:100dvh;
+height:100vh;
 overflow:hidden;
 
 background:
-linear-gradient(rgba(0,0,0,0.3),rgba(0,0,0,0.3)),
+linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),
 url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop');
 
 background-size:cover;
 background-position:center;
 }
 
-/* PHONE ROTATE */
+/* PHONE */
 
 @media screen and (orientation:portrait){
 
 body::before{
-content:"🔄 TURN PHONE HORIZONTAL";
+content:"🔄 ПОВЕРНИ ТЕЛЕФОН ГОРИЗОНТАЛЬНО";
 
 position:fixed;
 top:0;
@@ -74,7 +65,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 
-font-size:32px;
+font-size:28px;
 text-align:center;
 
 z-index:999999;
@@ -90,7 +81,7 @@ display:none;
 
 #title{
 position:absolute;
-top:20px;
+top:15px;
 left:50%;
 transform:translateX(-50%);
 
@@ -118,6 +109,45 @@ color:white;
 z-index:200;
 }
 
+/* NICKNAME */
+
+#nicknameBox{
+position:absolute;
+top:15px;
+right:20px;
+
+background:rgba(0,0,0,0.5);
+
+padding:10px 16px;
+
+border-radius:14px;
+
+color:white;
+
+z-index:500;
+}
+
+/* PVP */
+
+#pvpBtn{
+position:absolute;
+top:70px;
+right:20px;
+
+padding:12px 20px;
+
+background:red;
+color:white;
+
+border:none;
+border-radius:15px;
+
+font-size:20px;
+font-weight:bold;
+
+z-index:500;
+}
+
 /* PLAYER */
 
 #player{
@@ -136,6 +166,23 @@ top:300px;
 box-shadow:0 0 20px cyan;
 
 z-index:10;
+}
+
+/* PVP ENEMY */
+
+#pvpEnemy{
+position:absolute;
+
+width:55px;
+height:55px;
+
+background:magenta;
+
+border-radius:15px;
+
+display:none;
+
+box-shadow:0 0 20px magenta;
 }
 
 /* ENEMIES */
@@ -184,17 +231,7 @@ background:green;
 border-radius:50%;
 }
 
-/* WALLS */
-
-.wall{
-position:absolute;
-
-background:#6d4c41;
-
-border-radius:12px;
-}
-
-/* MOBILE CONTROLS */
+/* CONTROLS */
 
 #controls{
 position:absolute;
@@ -256,6 +293,15 @@ background:orange;
 font-size:42px;
 }
 
+/* MUSIC */
+
+#music{
+position:fixed;
+top:10px;
+left:10px;
+z-index:999999;
+}
+
 /* PC */
 
 @media (min-width:900px){
@@ -264,13 +310,6 @@ font-size:42px;
 display:none;
 }
 
-}
-
-  #music{
-position:fixed;
-top:10px;
-left:10px;
-z-index:999999;
 }
 
 </style>
@@ -283,10 +322,14 @@ z-index:999999;
 <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
 
 </audio>
-  
+
 <div id="game">
 
 <div id="title">CUBE FOREST ADVENTURE</div>
+
+<div id="nicknameBox"></div>
+
+<button id="pvpBtn">PVP</button>
 
 <div id="ui">
 LEVEL: 1<br>
@@ -294,6 +337,8 @@ KILLS: 0/1
 </div>
 
 <div id="player"></div>
+
+<div id="pvpEnemy"></div>
 
 <div id="portal"></div>
 
@@ -312,23 +357,24 @@ KILLS: 0/1
 
 <script>
 
-const game=document.getElementById("game");
-const player=document.getElementById("player");
-const ui=document.getElementById("ui");
+/* NICKNAME */
 
-let x=60;
-let y=300;
+let nickname=localStorage.getItem("nickname");
 
-let level=1;
-let kills=0;
+if(!nickname){
+
+nickname=prompt("ВВЕДИ NICKNAME");
+
+localStorage.setItem("nickname",nickname);
+
+}
+
+document.getElementById("nicknameBox").innerHTML=
+"👤 "+nickname;
 
 /* SAVE */
 
-const savedLevel=localStorage.getItem("forestLevel");
-
-if(savedLevel){
-level=parseInt(savedLevel);
-}
+let level=parseInt(localStorage.getItem("forestLevel")) || 1;
 
 function saveGame(){
 
@@ -336,8 +382,26 @@ localStorage.setItem("forestLevel",level);
 
 }
 
+/* GAME */
+
+const game=document.getElementById("game");
+const player=document.getElementById("player");
+const ui=document.getElementById("ui");
+
+let x=60;
+let y=300;
+
+let kills=0;
+
 let enemies=[];
-let walls=[];
+
+/* PVP */
+
+let inPVP=false;
+
+let pvpHits=0;
+
+const pvpEnemy=document.getElementById("pvpEnemy");
 
 /* RANDOM */
 
@@ -366,41 +430,6 @@ game.appendChild(tree);
 
 }
 
-/* WALLS */
-
-function makeWalls(){
-
-document.querySelectorAll(".wall").forEach(w=>w.remove());
-
-walls=[];
-
-for(let i=0;i<level+1;i++){
-
-let wall=document.createElement("div");
-
-wall.className="wall";
-
-let wx=random(50,window.innerWidth-200);
-let wy=random(180,window.innerHeight-250);
-
-wall.style.left=wx+"px";
-wall.style.top=wy+"px";
-wall.style.width=random(80,180)+"px";
-wall.style.height="22px";
-
-game.appendChild(wall);
-
-walls.push({
-x:wx,
-y:wy,
-w:parseInt(wall.style.width),
-h:22
-});
-
-}
-
-}
-
 /* ENEMIES */
 
 function makeEnemies(){
@@ -409,7 +438,7 @@ document.querySelectorAll(".enemy").forEach(e=>e.remove());
 
 enemies=[];
 
-for(let i=0;i<level+1;i++){
+for(let i=0;i<level;i++){
 
 let enemy=document.createElement("div");
 
@@ -426,31 +455,35 @@ game.appendChild(enemy);
 enemies.push({
 el:enemy,
 x:ex,
-y:ey,
-hp:1
+y:ey
 });
 
 }
 
 }
 
-/* LOAD LEVEL */
+/* LOAD */
 
 function loadLevel(){
 
 kills=0;
 
 makeTrees();
-makeWalls();
 makeEnemies();
 
 updateUI();
 
 }
 
-/* UI */
-
 function updateUI(){
+
+if(inPVP){
+
+ui.innerHTML=
+"⚔️ PVP MODE<br>"+
+"HITS: "+pvpHits+"/10";
+
+}else{
 
 ui.innerHTML=
 "LEVEL: "+level+
@@ -458,7 +491,7 @@ ui.innerHTML=
 
 }
 
-/* PLAYER */
+}
 
 function updatePlayer(){
 
@@ -471,24 +504,8 @@ player.style.top=y+"px";
 
 function move(dx,dy){
 
-let nx=x+dx;
-let ny=y+dy;
-
-for(let wall of walls){
-
-if(
-nx<wall.x+wall.w &&
-nx+55>wall.x &&
-ny<wall.y+wall.h &&
-ny+55>wall.y
-){
-return;
-}
-
-}
-
-x=nx;
-y=ny;
+x+=dx;
+y+=dy;
 
 if(x<0)x=0;
 if(y<150)y=150;
@@ -508,6 +525,42 @@ checkPortal();
 /* ATTACK */
 
 function attack(){
+
+if(inPVP){
+
+let enemyX=parseInt(pvpEnemy.style.left);
+let enemyY=parseInt(pvpEnemy.style.top);
+
+let dx=Math.abs(enemyX-x);
+let dy=Math.abs(enemyY-y);
+
+if(dx<90 && dy<90){
+
+pvpHits++;
+
+updateUI();
+
+pvpEnemy.style.background="yellow";
+
+setTimeout(()=>{
+pvpEnemy.style.background="magenta";
+},100);
+
+if(pvpHits>=10){
+
+alert("🏆 ТЫ ПОБЕДИЛ В PVP!");
+
+exitPVP();
+
+}
+
+}
+
+return;
+
+}
+
+/* NORMAL */
 
 enemies.forEach((enemy,index)=>{
 
@@ -534,13 +587,13 @@ updateUI();
 
 function checkPortal(){
 
+if(inPVP)return;
+
 if(
 x>window.innerWidth-130 &&
 Math.abs(y-300)<120 &&
 kills>=level
 ){
-
-if(level<28){
 
 level++;
 
@@ -552,45 +605,15 @@ y=300;
 loadLevel();
 updatePlayer();
 
-}else{
-
-ui.innerHTML="🏆 YOU WIN 🏆";
-
 }
 
 }
-
-}
-
-/* MOBILE */
-
-document.getElementById("up").ontouchstart=()=>move(0,-25);
-document.getElementById("down").ontouchstart=()=>move(0,25);
-document.getElementById("left").ontouchstart=()=>move(-25,0);
-document.getElementById("right").ontouchstart=()=>move(25,0);
-
-document.getElementById("attack").ontouchstart=()=>attack();
-
-/* PC */
-
-window.addEventListener("keydown",function(e){
-
-e.preventDefault();
-
-const key=e.key.toLowerCase();
-
-if(key==="w" || key==="arrowup") move(0,-25);
-if(key==="s" || key==="arrowdown") move(0,25);
-if(key==="a" || key==="arrowleft") move(-25,0);
-if(key==="d" || key==="arrowright") move(25,0);
-
-if(e.code==="Space") attack();
-
-});
 
 /* ENEMY AI */
 
 function enemyAI(){
+
+if(inPVP)return;
 
 enemies.forEach(enemy=>{
 
@@ -619,99 +642,98 @@ updatePlayer();
 
 }
 
-/* ADMIN PANEL */
+setInterval(enemyAI,30);
 
-let admin=false;
+/* PVP BUTTON */
 
-window.addEventListener("keydown",function(e){
+document.getElementById("pvpBtn").onclick=function(){
 
-const key=e.key.toLowerCase();
+let enemyNick=prompt("ВВЕДИ NICKNAME ИГРОКА");
 
-if(key==="p"){
+if(!enemyNick)return;
 
-const password=prompt("PASSWORD");
+let accept=confirm(enemyNick+" ПРИНЯЛ PVP!");
 
-if(password!=="561094"){
-return;
-}
+if(accept){
 
-admin=!admin;
+startPVP();
 
-alert(
-"ADMIN ENABLED\n\n"+
-"1 = NEXT LEVEL\n"+
-"2 = KILL ALL\n"+
-"3 = TELEPORT\n"+
-"4 = RESET SAVE"
-);
+}else{
+
+alert(enemyNick+" ОТКЛОНИЛ PVP");
 
 }
 
-if(!admin)return;
+};
 
-/* NEXT LEVEL */
+/* START PVP */
 
-if(key==="1"){
+function startPVP(){
 
-if(level<28){
-level++;
-}
+inPVP=true;
 
-saveGame();
+pvpHits=0;
 
-loadLevel();
-
-}
-
-/* KILL ALL */
-
-if(key==="2"){
-
-enemies.forEach(enemy=>enemy.el.remove());
+document.querySelectorAll(".enemy").forEach(e=>e.remove());
 
 enemies=[];
 
-kills=level;
+game.style.background=
+"linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
+
+game.style.backgroundSize="cover";
+
+pvpEnemy.style.display="block";
+
+pvpEnemy.style.left="700px";
+pvpEnemy.style.top="300px";
 
 updateUI();
 
 }
 
-/* TELEPORT */
+/* EXIT PVP */
 
-if(key==="3"){
+function exitPVP(){
 
-x=window.innerWidth-140;
-y=300;
+inPVP=false;
 
-updatePlayer();
+game.style.background=
+"linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
 
-}
+game.style.backgroundSize="cover";
 
-/* RESET SAVE */
-
-if(key==="4"){
-
-localStorage.removeItem("forestLevel");
-
-level=1;
-
-saveGame();
+pvpEnemy.style.display="none";
 
 loadLevel();
 
-alert("SAVE RESET");
-
 }
+
+/* MOBILE */
+
+document.getElementById("up").ontouchstart=()=>move(0,-25);
+document.getElementById("down").ontouchstart=()=>move(0,25);
+document.getElementById("left").ontouchstart=()=>move(-25,0);
+document.getElementById("right").ontouchstart=()=>move(25,0);
+
+document.getElementById("attack").ontouchstart=()=>attack();
+
+/* PC */
+
+window.addEventListener("keydown",function(e){
+
+const key=e.key.toLowerCase();
+
+if(key==="w" || key==="arrowup") move(0,-25);
+if(key==="s" || key==="arrowdown") move(0,25);
+if(key==="a" || key==="arrowleft") move(-25,0);
+if(key==="d" || key==="arrowright") move(25,0);
+
+if(e.code==="Space") attack();
 
 });
 
-setInterval(enemyAI,30);
-
-loadLevel();
-updatePlayer();
-
-/* START MUSIC */
+/* MUSIC */
 
 const music=document.getElementById("music");
 
@@ -728,7 +750,12 @@ document.removeEventListener("touchstart",startMusic);
 
 document.addEventListener("click",startMusic);
 document.addEventListener("touchstart",startMusic);
-  
+
+/* START */
+
+loadLevel();
+updatePlayer();
+
 </script>
 
 </body>
