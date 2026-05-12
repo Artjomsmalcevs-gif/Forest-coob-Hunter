@@ -582,10 +582,14 @@ kills>=level
 ){
 
 if(level<28){
-
 level++;
+}
 
 saveGame();
+
+loadLevel();
+
+updateUI();
 
 x=60;
 y=300;
