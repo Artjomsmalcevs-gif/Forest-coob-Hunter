@@ -31,15 +31,14 @@ top:0;
 left:0;
 width:100vw;
 height:100vh;
+overflow:hidden;
 
 background:
-linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),
+linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),
 url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop');
 
 background-size:cover;
 background-position:center;
-
-overflow:hidden;
 }
 
 #title{
@@ -55,7 +54,7 @@ color:lime;
 
 text-shadow:3px 3px black;
 
-z-index:100;
+z-index:200;
 }
 
 #nicknameBox{
@@ -73,7 +72,7 @@ color:white;
 
 font-size:20px;
 
-z-index:100;
+z-index:500;
 }
 
 #ui{
@@ -84,7 +83,7 @@ left:15px;
 font-size:22px;
 color:white;
 
-z-index:100;
+z-index:500;
 }
 
 #player{
@@ -96,6 +95,9 @@ height:55px;
 background:cyan;
 
 border-radius:15px;
+
+left:60px;
+top:300px;
 
 box-shadow:0 0 20px cyan;
 
@@ -113,6 +115,54 @@ background:magenta;
 border-radius:15px;
 
 box-shadow:0 0 20px magenta;
+}
+
+.enemy{
+position:absolute;
+
+width:55px;
+height:55px;
+
+background:red;
+
+border-radius:50%;
+
+box-shadow:0 0 18px red;
+}
+
+.tree{
+position:absolute;
+
+width:65px;
+height:65px;
+
+background:green;
+
+border-radius:50%;
+}
+
+.wall{
+position:absolute;
+
+background:#6d4c41;
+
+border-radius:12px;
+}
+
+#portal{
+position:absolute;
+
+width:90px;
+height:90px;
+
+border-radius:50%;
+
+background:gold;
+
+top:300px;
+right:25px;
+
+box-shadow:0 0 35px yellow;
 }
 
 #pvpBtn,
@@ -246,7 +296,8 @@ CUBE FOREST ONLINE
 <div id="nicknameBox"></div>
 
 <div id="ui">
-🌍 ONLINE MODE
+LEVEL: 1<br>
+KILLS: 0/1
 </div>
 
 <button id="pvpBtn">
@@ -262,6 +313,8 @@ PVP
 </button>
 
 <div id="player"></div>
+
+<div id="portal"></div>
 
 <div id="controls">
 
@@ -292,19 +345,19 @@ remove
 
 const firebaseConfig = {
 
-apiKey: "AIzaSyCWI27EmNBuWvZVKcp10hlM1Q6IdB_BU8c",
-authDomain: "cube-forest-online.firebaseapp.com",
-databaseURL: "https://cube-forest-online-default-rtdb.firebaseio.com",
-projectId: "cube-forest-online",
-storageBucket: "cube-forest-online.appspot.com",
-messagingSenderId: "651385146904",
-appId: "1:651385146904:web:f116175c0e341cc21ffd6d"
+apiKey:"AIzaSyCWI27EmNBuWvZVKcp10hlM1Q6IdB_BU8c",
+authDomain:"cube-forest-online.firebaseapp.com",
+databaseURL:"https://cube-forest-online-default-rtdb.firebaseio.com",
+projectId:"cube-forest-online",
+storageBucket:"cube-forest-online.appspot.com",
+messagingSenderId:"651385146904",
+appId:"1:651385146904:web:f116175c0e341cc21ffd6d"
 
 };
 
-const app = initializeApp(firebaseConfig);
+const app=initializeApp(firebaseConfig);
 
-const db = getDatabase(app);
+const db=getDatabase(app);
 
 /* NICKNAME */
 
@@ -321,14 +374,23 @@ localStorage.setItem("nickname",nickname);
 document.getElementById("nicknameBox").innerHTML=
 "👤 "+nickname;
 
-/* PLAYER */
+/* GAME */
 
+const game=document.getElementById("game");
 const player=document.getElementById("player");
+const ui=document.getElementById("ui");
 
 let x=60;
 let y=300;
 
 let online=true;
+
+let level=parseInt(localStorage.getItem("forestLevel")) || 1;
+
+let kills=0;
+
+let enemies=[];
+let walls=[];
 
 /* PVP */
 
@@ -336,7 +398,149 @@ let inPVP=false;
 let currentRoom=null;
 let hits=0;
 
-/* UPDATE PLAYER */
+/* SAVE */
+
+function saveGame(){
+
+localStorage.setItem("forestLevel",level);
+
+}
+
+/* RANDOM */
+
+function random(min,max){
+
+return Math.floor(Math.random()*(max-min))+min;
+
+}
+
+/* TREES */
+
+function makeTrees(){
+
+document.querySelectorAll(".tree").forEach(t=>t.remove());
+
+for(let i=0;i<12;i++){
+
+let tree=document.createElement("div");
+
+tree.className="tree";
+
+tree.style.left=random(0,window.innerWidth-70)+"px";
+tree.style.top=random(150,window.innerHeight-200)+"px";
+
+game.appendChild(tree);
+
+}
+
+}
+
+/* WALLS */
+
+function makeWalls(){
+
+document.querySelectorAll(".wall").forEach(w=>w.remove());
+
+walls=[];
+
+for(let i=0;i<level+1;i++){
+
+let wall=document.createElement("div");
+
+wall.className="wall";
+
+let wx=random(50,window.innerWidth-200);
+let wy=random(180,window.innerHeight-250);
+
+wall.style.left=wx+"px";
+wall.style.top=wy+"px";
+
+wall.style.width=random(80,180)+"px";
+wall.style.height="22px";
+
+game.appendChild(wall);
+
+walls.push({
+
+x:wx,
+y:wy,
+w:parseInt(wall.style.width),
+h:22
+
+});
+
+}
+
+}
+
+/* ENEMIES */
+
+function makeEnemies(){
+
+document.querySelectorAll(".enemy").forEach(e=>e.remove());
+
+enemies=[];
+
+for(let i=0;i<level;i++){
+
+let enemy=document.createElement("div");
+
+enemy.className="enemy";
+
+let ex=random(120,window.innerWidth-120);
+let ey=random(220,window.innerHeight-250);
+
+enemy.style.left=ex+"px";
+enemy.style.top=ey+"px";
+
+game.appendChild(enemy);
+
+enemies.push({
+
+el:enemy,
+x:ex,
+y:ey
+
+});
+
+}
+
+}
+
+/* LOAD LEVEL */
+
+function loadLevel(){
+
+kills=0;
+
+makeTrees();
+makeWalls();
+makeEnemies();
+
+updateUI();
+
+}
+
+/* UI */
+
+function updateUI(){
+
+if(inPVP){
+
+ui.innerHTML=
+"⚔️ PVP MODE<br>HITS: "+hits+"/10";
+
+}else{
+
+ui.innerHTML=
+"LEVEL: "+level+
+"<br>KILLS: "+kills+"/"+level;
+
+}
+
+}
+
+/* PLAYER */
 
 function updatePlayer(){
 
@@ -345,12 +549,42 @@ player.style.top=y+"px";
 
 }
 
+/* WALLS */
+
+function hitWall(nx,ny){
+
+for(let wall of walls){
+
+if(
+
+nx<wall.x+wall.w &&
+nx+55>wall.x &&
+ny<wall.y+wall.h &&
+ny+55>wall.y
+
+){
+
+return true;
+
+}
+
+}
+
+return false;
+
+}
+
 /* MOVE */
 
 function move(dx,dy){
 
-x+=dx;
-y+=dy;
+let nx=x+dx;
+let ny=y+dy;
+
+if(hitWall(nx,ny))return;
+
+x=nx;
+y=ny;
 
 if(x<0)x=0;
 if(y<0)y=0;
@@ -367,7 +601,367 @@ if(online){
 syncPlayer();
 }
 
+checkPortal();
+
 }
+
+/* ATTACK */
+
+function attack(){
+
+if(inPVP){
+
+document.querySelectorAll(".onlinePlayer").forEach(enemy=>{
+
+let ex=parseInt(enemy.style.left);
+let ey=parseInt(enemy.style.top);
+
+let dx=Math.abs(ex-x);
+let dy=Math.abs(ey-y);
+
+if(dx<90 && dy<90){
+
+hits++;
+
+updateUI();
+
+enemy.style.background="yellow";
+
+setTimeout(()=>{
+enemy.style.background="magenta";
+},100);
+
+if(hits>=10){
+
+alert("🏆 ТЫ ПОБЕДИЛ!");
+
+endPVP();
+
+}
+
+}
+
+});
+
+return;
+
+}
+
+/* NORMAL ENEMIES */
+
+enemies.forEach((enemy,index)=>{
+
+let dx=Math.abs(enemy.x-x);
+let dy=Math.abs(enemy.y-y);
+
+if(dx<90 && dy<90){
+
+enemy.el.remove();
+
+enemies.splice(index,1);
+
+kills++;
+
+updateUI();
+
+}
+
+});
+
+}
+
+/* NEXT LEVEL */
+
+function checkPortal(){
+
+if(inPVP)return;
+
+if(
+
+x>window.innerWidth-130 &&
+Math.abs(y-300)<120 &&
+kills>=level
+
+){
+
+if(level<28){
+
+level++;
+
+saveGame();
+
+x=60;
+y=300;
+
+loadLevel();
+
+updatePlayer();
+
+}else{
+
+ui.innerHTML="🏆 YOU WIN 🏆";
+
+}
+
+}
+
+}
+
+/* ENEMY AI */
+
+function enemyAI(){
+
+if(inPVP)return;
+
+enemies.forEach(enemy=>{
+
+if(enemy.x<x)enemy.x+=1;
+if(enemy.x>x)enemy.x-=1;
+
+if(enemy.y<y)enemy.y+=1;
+if(enemy.y>y)enemy.y-=1;
+
+enemy.el.style.left=enemy.x+"px";
+enemy.el.style.top=enemy.y+"px";
+
+if(
+
+Math.abs(enemy.x-x)<40 &&
+Math.abs(enemy.y-y)<40
+
+){
+
+x=60;
+y=300;
+
+updatePlayer();
+
+}
+
+});
+
+}
+
+setInterval(enemyAI,30);
+
+/* ONLINE */
+
+function syncPlayer(){
+
+set(ref(db,"players/"+nickname),{
+
+nickname:nickname,
+x:x,
+y:y
+
+});
+
+}
+
+setInterval(()=>{
+
+if(online){
+syncPlayer();
+}
+
+},100);
+
+/* PLAYERS */
+
+onValue(ref(db,"players"),snapshot=>{
+
+const data=snapshot.val();
+
+document.querySelectorAll(".onlinePlayer").forEach(e=>e.remove());
+
+if(!data)return;
+
+Object.values(data).forEach(p=>{
+
+if(p.nickname===nickname)return;
+
+let enemy=document.createElement("div");
+
+enemy.className="onlinePlayer";
+
+enemy.style.left=p.x+"px";
+enemy.style.top=p.y+"px";
+
+game.appendChild(enemy);
+
+});
+
+});
+
+/* SEND PVP */
+
+document.getElementById("pvpBtn").onclick=function(){
+
+let enemyNick=prompt("ВВЕДИ NICKNAME");
+
+if(!enemyNick)return;
+
+set(ref(db,"pvpRequests/"+enemyNick),{
+
+from:nickname
+
+});
+
+alert("⚔️ ЗАПРОС ОТПРАВЛЕН");
+
+};
+
+/* RECEIVE */
+
+onValue(ref(db,"pvpRequests/"+nickname),snapshot=>{
+
+const data=snapshot.val();
+
+if(!data)return;
+
+let accept=confirm(
+data.from+" ХОЧЕТ PVP"
+);
+
+if(accept){
+
+currentRoom=
+data.from+"_"+nickname;
+
+set(ref(db,"pvpRooms/"+currentRoom),{
+
+player1:data.from,
+player2:nickname
+
+});
+
+}else{
+
+alert("❌ PVP ОТКЛОНЁН");
+
+}
+
+remove(ref(db,"pvpRequests/"+nickname));
+
+});
+
+/* WATCH */
+
+onValue(ref(db,"pvpRooms"),snapshot=>{
+
+const rooms=snapshot.val();
+
+if(!rooms)return;
+
+Object.keys(rooms).forEach(roomId=>{
+
+const room=rooms[roomId];
+
+if(
+
+room.player1===nickname ||
+room.player2===nickname
+
+){
+
+if(!inPVP){
+
+startPVP(roomId);
+
+}
+
+}
+
+});
+
+});
+
+/* START PVP */
+
+function startPVP(roomId){
+
+inPVP=true;
+
+currentRoom=roomId;
+
+hits=0;
+
+game.style.background=
+"linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
+
+game.style.backgroundSize="cover";
+
+if(roomId.startsWith(nickname)){
+
+x=150;
+y=300;
+
+}else{
+
+x=700;
+y=300;
+
+}
+
+updatePlayer();
+
+updateUI();
+
+}
+
+/* END PVP */
+
+function endPVP(){
+
+inPVP=false;
+
+hits=0;
+
+remove(ref(db,"pvpRooms/"+currentRoom));
+
+game.style.background=
+"linear-gradient(rgba(0,0,0,0.35),rgba(0,0,0,0.35)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
+
+game.style.backgroundSize="cover";
+
+x=60;
+y=300;
+
+updatePlayer();
+
+updateUI();
+
+}
+
+/* EXIT ONLINE */
+
+document.getElementById("leaveBtn").onclick=function(){
+
+online=false;
+
+remove(ref(db,"players/"+nickname));
+
+document.querySelectorAll(".onlinePlayer").forEach(e=>e.remove());
+
+document.getElementById("leaveBtn").style.display="none";
+
+document.getElementById("joinBtn").style.display="block";
+
+};
+
+/* JOIN ONLINE */
+
+document.getElementById("joinBtn").onclick=function(){
+
+online=true;
+
+syncPlayer();
+
+document.getElementById("leaveBtn").style.display="block";
+
+document.getElementById("joinBtn").style.display="none";
+
+};
 
 /* MOBILE */
 
@@ -413,305 +1007,10 @@ document.removeEventListener("touchstart",startMusic);
 document.addEventListener("click",startMusic);
 document.addEventListener("touchstart",startMusic);
 
-/* ONLINE */
-
-function syncPlayer(){
-
-set(ref(db,"players/"+nickname),{
-
-nickname:nickname,
-x:x,
-y:y,
-pvp:inPVP
-
-});
-
-}
-
-setInterval(()=>{
-
-if(online){
-syncPlayer();
-}
-
-},100);
-
-/* SHOW PLAYERS */
-
-onValue(ref(db,"players"),snapshot=>{
-
-const data=snapshot.val();
-
-document.querySelectorAll(".onlinePlayer").forEach(e=>e.remove());
-
-if(!data)return;
-
-Object.values(data).forEach(p=>{
-
-if(p.nickname===nickname)return;
-
-let enemy=document.createElement("div");
-
-enemy.className="onlinePlayer";
-
-enemy.style.left=p.x+"px";
-enemy.style.top=p.y+"px";
-
-enemy.dataset.nickname=p.nickname;
-
-document.getElementById("game").appendChild(enemy);
-
-});
-
-});
-
-/* SEND PVP */
-
-document.getElementById("pvpBtn").onclick=function(){
-
-let enemyNick=prompt("ВВЕДИ NICKNAME");
-
-if(!enemyNick)return;
-
-set(ref(db,"pvpRequests/"+enemyNick),{
-
-from:nickname
-
-});
-
-alert("⚔️ ЗАПРОС ОТПРАВЛЕН");
-
-};
-
-/* RECEIVE REQUEST */
-
-onValue(ref(db,"pvpRequests/"+nickname),snapshot=>{
-
-const data=snapshot.val();
-
-if(!data)return;
-
-let accept=confirm(
-data.from+" ХОЧЕТ PVP"
-);
-
-if(accept){
-
-currentRoom=
-data.from+"_"+nickname;
-
-set(ref(db,"pvpRooms/"+currentRoom),{
-
-player1:data.from,
-player2:nickname,
-started:true
-
-});
-
-}else{
-
-alert("❌ PVP ОТКЛОНЁН");
-
-}
-
-remove(ref(db,"pvpRequests/"+nickname));
-
-});
-
-/* WATCH ROOMS */
-
-onValue(ref(db,"pvpRooms"),snapshot=>{
-
-const rooms=snapshot.val();
-
-if(!rooms)return;
-
-Object.keys(rooms).forEach(roomId=>{
-
-const room=rooms[roomId];
-
-if(
-room.player1===nickname ||
-room.player2===nickname
-){
-
-if(!inPVP){
-
-startPVP(roomId);
-
-}
-
-}
-
-});
-
-});
-
-/* START PVP */
-
-function startPVP(roomId){
-
-inPVP=true;
-
-currentRoom=roomId;
-
-hits=0;
-
-/* PVP MAP */
-
-document.getElementById("game").style.background=
-"linear-gradient(rgba(0,0,0,0.5),rgba(0,0,0,0.5)),url('https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop')";
-
-document.getElementById("game").style.backgroundSize="cover";
-
-/* SPAWN */
-
-if(roomId.startsWith(nickname)){
-
-x=150;
-y=300;
-
-}else{
-
-x=700;
-y=300;
-
-}
-
-updatePlayer();
-
-/* UI */
-
-document.getElementById("ui").innerHTML=
-"⚔️ PVP MODE<br>HITS: 0/10";
-
-alert("⚔️ PVP НАЧАЛСЯ");
-
-}
-
-/* ATTACK */
-
-function attack(){
-
-if(!inPVP)return;
-
-document.querySelectorAll(".onlinePlayer").forEach(enemy=>{
-
-let ex=parseInt(enemy.style.left);
-let ey=parseInt(enemy.style.top);
-
-let dx=Math.abs(ex-x);
-let dy=Math.abs(ey-y);
-
-if(dx<90 && dy<90){
-
-hits++;
-
-enemy.style.background="yellow";
-
-setTimeout(()=>{
-enemy.style.background="magenta";
-},100);
-
-document.getElementById("ui").innerHTML=
-"⚔️ PVP MODE<br>HITS: "+hits+"/10";
-
-if(hits>=10){
-
-alert("🏆 ТЫ ПОБЕДИЛ!");
-
-endPVP();
-
-}
-
-}
-
-});
-
-}
-
-/* END PVP */
-
-function endPVP(){
-
-inPVP=false;
-
-hits=0;
-
-if(currentRoom){
-
-remove(ref(db,"pvpRooms/"+currentRoom));
-
-}
-
-/* NORMAL MAP */
-
-document.getElementById("game").style.background=
-"linear-gradient(rgba(0,0,0,0.4),rgba(0,0,0,0.4)),url('https://images.unsplash.com/photo-1448375240586-882707db888b?q=80&w=1200&auto=format&fit=crop')";
-
-document.getElementById("game").style.backgroundSize="cover";
-
-x=60;
-y=300;
-
-updatePlayer();
-
-document.getElementById("ui").innerHTML=
-"🌍 ONLINE MODE";
-
-alert("🏠 ВОЗВРАТ В МИР");
-
-}
-
-/* EXIT ONLINE */
-
-document.getElementById("leaveBtn").onclick=function(){
-
-online=false;
-
-remove(ref(db,"players/"+nickname));
-
-document.querySelectorAll(".onlinePlayer").forEach(e=>e.remove());
-
-document.getElementById("leaveBtn").style.display="none";
-
-document.getElementById("joinBtn").style.display="block";
-
-alert("❌ OFFLINE MODE");
-
-};
-
-/* JOIN ONLINE */
-
-document.getElementById("joinBtn").onclick=function(){
-
-let newNick=prompt("ВВЕДИ NICKNAME");
-
-if(!newNick)return;
-
-nickname=newNick;
-
-localStorage.setItem("nickname",nickname);
-
-document.getElementById("nicknameBox").innerHTML=
-"👤 "+nickname;
-
-online=true;
-
-syncPlayer();
-
-document.getElementById("leaveBtn").style.display="block";
-
-document.getElementById("joinBtn").style.display="none";
-
-alert("✅ ONLINE MODE");
-
-};
-
 /* START */
 
+loadLevel();
 updatePlayer();
-
 syncPlayer();
 
 </script>
