@@ -648,8 +648,65 @@ updatePlayer();
 });
 }
 
-setInterval(enemyAI,30);
+/* ADMIN PANEL */
 
+let admin=false;
+
+window.addEventListener("keydown",(e)=>{
+
+if(e.key.toLowerCase()==="p"){
+
+admin=!admin;
+
+if(admin){
+
+alert(
+"ADMIN PANEL\n\n"+
+"1 = LEVEL UP\n"+
+"2 = KILL ALL\n"+
+"3 = TELEPORT TO PORTAL"
+);
+
+}
+
+}
+
+if(!admin)return;
+
+if(e.key==="1"){
+
+level++;
+
+saveGame();
+
+loadLevel();
+
+}
+
+if(e.key==="2"){
+
+enemies.forEach(enemy=>enemy.el.remove());
+
+enemies=[];
+
+kills=level;
+
+updateUI();
+
+}
+
+if(e.key==="3"){
+
+x=window.innerWidth-140;
+y=300;
+
+updatePlayer();
+
+}
+
+});
+
+setInterval(enemyAI,30);
 loadLevel();
 updatePlayer();
 
