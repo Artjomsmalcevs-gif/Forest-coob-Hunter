@@ -17,12 +17,10 @@ viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<title>cube Forest Adventure</title>
+<title>Cube Forest Adventure</title>
 
 <link rel="manifest" href="manifest.json">
-
-<link rel="icon" type="image/png" href="icon.png">
-
+<link rel="icon" href="icon.png">
 <link rel="apple-touch-icon" href="icon.png">
 
 <style>
@@ -31,30 +29,20 @@ html,body{
 margin:0;
 padding:0;
 overflow:hidden;
-
 width:100%;
 height:100%;
-
 background:black;
-
 font-family:Arial;
-
 touch-action:none;
-
 overscroll-behavior:none;
 }
 
-/* FULLSCREEN GAME */
-
 #game{
 position:fixed;
-
 top:0;
 left:0;
-
 width:100vw;
 height:100dvh;
-
 overflow:hidden;
 
 background:
@@ -65,7 +53,7 @@ background-size:cover;
 background-position:center;
 }
 
-/* ROTATE PHONE */
+/* PHONE ROTATE */
 
 @media screen and (orientation:portrait){
 
@@ -73,7 +61,6 @@ body::before{
 content:"🔄 TURN PHONE HORIZONTAL";
 
 position:fixed;
-
 top:0;
 left:0;
 
@@ -87,7 +74,7 @@ display:flex;
 justify-content:center;
 align-items:center;
 
-font-size:34px;
+font-size:32px;
 text-align:center;
 
 z-index:999999;
@@ -99,42 +86,12 @@ display:none;
 
 }
 
-button{
-outline:none;
-}
-
-/* DOWNLOAD */
-
-#download{
-position:fixed;
-
-top:15px;
-right:15px;
-
-z-index:99999;
-
-padding:14px 20px;
-
-background:gold;
-color:black;
-
-font-size:20px;
-font-weight:bold;
-
-border:none;
-border-radius:15px;
-
-box-shadow:0 0 15px black;
-}
-
 /* TITLE */
 
 #title{
 position:absolute;
-
 top:20px;
 left:50%;
-
 transform:translateX(-50%);
 
 font-size:42px;
@@ -151,34 +108,12 @@ z-index:200;
 
 #ui{
 position:absolute;
-
 top:90px;
 left:15px;
 
 font-size:22px;
 
 color:white;
-
-z-index:200;
-}
-
-/* TUTORIAL */
-
-#tutorial{
-position:absolute;
-
-top:90px;
-right:15px;
-
-background:rgba(0,0,0,0.5);
-
-padding:12px;
-
-border-radius:15px;
-
-color:white;
-
-font-size:17px;
 
 z-index:200;
 }
@@ -236,16 +171,6 @@ right:25px;
 box-shadow:0 0 35px yellow;
 }
 
-/* WALLS */
-
-.wall{
-position:absolute;
-
-background:#6d4c41;
-
-border-radius:12px;
-}
-
 /* TREES */
 
 .tree{
@@ -257,6 +182,16 @@ height:65px;
 background:green;
 
 border-radius:50%;
+}
+
+/* WALLS */
+
+.wall{
+position:absolute;
+
+background:#6d4c41;
+
+border-radius:12px;
 }
 
 /* MOBILE CONTROLS */
@@ -288,8 +223,6 @@ background:rgba(255,255,255,0.25);
 color:white;
 
 font-size:36px;
-
-backdrop-filter:blur(5px);
 }
 
 #up{
@@ -320,7 +253,6 @@ width:105px;
 height:105px;
 
 background:orange;
-
 font-size:42px;
 }
 
@@ -341,21 +273,11 @@ display:none;
 
 <div id="game">
 
-<a href="index.html" download>
-<button id="download">DOWNLOAD</button>
-</a>
-
-<div id="title">cube Forest Adventure</div>
+<div id="title">CUBE FOREST ADVENTURE</div>
 
 <div id="ui">
 LEVEL: 1<br>
 KILLS: 0/1
-</div>
-
-<div id="tutorial">
-💻 W A S D / ARROWS<br>
-⚔️ SPACE = ATTACK<br>
-📱 TOUCH BUTTONS
 </div>
 
 <div id="player"></div>
@@ -386,10 +308,10 @@ let y=300;
 
 let level=1;
 let kills=0;
-  
-/* SAVE SYSTEM */
 
-const savedLevel = localStorage.getItem("forestLevel");
+/* SAVE */
+
+const savedLevel=localStorage.getItem("forestLevel");
 
 if(savedLevel){
 level=parseInt(savedLevel);
@@ -400,12 +322,17 @@ function saveGame(){
 localStorage.setItem("forestLevel",level);
 
 }
+
 let enemies=[];
 let walls=[];
+
+/* RANDOM */
 
 function random(min,max){
 return Math.floor(Math.random()*(max-min))+min;
 }
+
+/* TREES */
 
 function makeTrees(){
 
@@ -421,8 +348,12 @@ tree.style.left=random(0,window.innerWidth-70)+"px";
 tree.style.top=random(150,window.innerHeight-200)+"px";
 
 game.appendChild(tree);
+
 }
+
 }
+
+/* WALLS */
 
 function makeWalls(){
 
@@ -452,8 +383,12 @@ y:wy,
 w:parseInt(wall.style.width),
 h:22
 });
+
 }
+
 }
+
+/* ENEMIES */
 
 function makeEnemies(){
 
@@ -479,10 +414,14 @@ enemies.push({
 el:enemy,
 x:ex,
 y:ey,
-hp:Math.min(level,5)
+hp:1
 });
+
 }
+
 }
+
+/* LOAD LEVEL */
 
 function loadLevel(){
 
@@ -493,20 +432,29 @@ makeWalls();
 makeEnemies();
 
 updateUI();
+
 }
+
+/* UI */
 
 function updateUI(){
 
 ui.innerHTML=
 "LEVEL: "+level+
 "<br>KILLS: "+kills+"/"+level;
+
 }
+
+/* PLAYER */
 
 function updatePlayer(){
 
 player.style.left=x+"px";
 player.style.top=y+"px";
+
 }
+
+/* MOVE */
 
 function move(dx,dy){
 
@@ -523,6 +471,7 @@ ny+55>wall.y
 ){
 return;
 }
+
 }
 
 x=nx;
@@ -540,7 +489,10 @@ y=window.innerHeight-100;
 updatePlayer();
 
 checkPortal();
+
 }
+
+/* ATTACK */
 
 function attack(){
 
@@ -551,16 +503,6 @@ let dy=Math.abs(enemy.y-y);
 
 if(dx<90 && dy<90){
 
-enemy.hp--;
-
-enemy.el.style.background="orange";
-
-setTimeout(()=>{
-enemy.el.style.background="red";
-},100);
-
-if(enemy.hp<=0){
-
 enemy.el.remove();
 
 enemies.splice(index,1);
@@ -568,18 +510,14 @@ enemies.splice(index,1);
 kills++;
 
 updateUI();
+
 }
-}
+
 });
+
 }
 
-function checkPortal(){
-
-if(
-x>window.innerWidth-130 &&
-Math.abs(y-300)<120 &&
-kills>=level
-){
+/* NEXT LEVEL */
 
 function checkPortal(){
 
@@ -608,7 +546,10 @@ ui.innerHTML="🏆 YOU WIN 🏆";
 }
 
 }
+
 }
+
+/* MOBILE */
 
 document.getElementById("up").ontouchstart=()=>move(0,-25);
 document.getElementById("down").ontouchstart=()=>move(0,25);
@@ -616,6 +557,8 @@ document.getElementById("left").ontouchstart=()=>move(-25,0);
 document.getElementById("right").ontouchstart=()=>move(25,0);
 
 document.getElementById("attack").ontouchstart=()=>attack();
+
+/* PC */
 
 window.addEventListener("keydown",function(e){
 
@@ -632,15 +575,17 @@ if(e.code==="Space") attack();
 
 });
 
+/* ENEMY AI */
+
 function enemyAI(){
 
 enemies.forEach(enemy=>{
 
-if(enemy.x<x)enemy.x+=1+level*0.15;
-if(enemy.x>x)enemy.x-=1+level*0.15;
+if(enemy.x<x)enemy.x+=1;
+if(enemy.x>x)enemy.x-=1;
 
-if(enemy.y<y)enemy.y+=1+level*0.15;
-if(enemy.y>y)enemy.y-=1+level*0.15;
+if(enemy.y<y)enemy.y+=1;
+if(enemy.y>y)enemy.y-=1;
 
 enemy.el.style.left=enemy.x+"px";
 enemy.el.style.top=enemy.y+"px";
@@ -654,8 +599,11 @@ x=60;
 y=300;
 
 updatePlayer();
+
 }
+
 });
+
 }
 
 /* ADMIN PANEL */
@@ -665,8 +613,6 @@ let admin=false;
 window.addEventListener("keydown",function(e){
 
 const key=e.key.toLowerCase();
-
-/* OPEN ADMIN */
 
 if(key==="p"){
 
@@ -678,10 +624,8 @@ return;
 
 admin=!admin;
 
-if(admin){
-
 alert(
-"ADMIN PANEL ENABLED\n\n"+
+"ADMIN ENABLED\n\n"+
 "1 = NEXT LEVEL\n"+
 "2 = KILL ALL\n"+
 "3 = TELEPORT\n"+
@@ -689,22 +633,6 @@ alert(
 );
 
 }
-
-}
-
-alert(
-"ADMIN PANEL ENABLED\n\n"+
-"1 = NEXT LEVEL\n"+
-"2 = KILL ALL\n"+
-"3 = TELEPORT\n"+
-"4 = RESET SAVE"
-);
-
-}
-
-}
-
-/* ADMIN OFF */
 
 if(!admin)return;
 
@@ -719,8 +647,6 @@ level++;
 saveGame();
 
 loadLevel();
-
-updateUI();
 
 }
 
@@ -756,13 +682,10 @@ if(key==="4"){
 localStorage.removeItem("forestLevel");
 
 level=1;
-kills=0;
 
 saveGame();
 
 loadLevel();
-
-updateUI();
 
 alert("SAVE RESET");
 
@@ -771,6 +694,7 @@ alert("SAVE RESET");
 });
 
 setInterval(enemyAI,30);
+
 loadLevel();
 updatePlayer();
 
