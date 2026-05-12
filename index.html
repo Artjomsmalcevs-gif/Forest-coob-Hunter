@@ -73,6 +73,29 @@ color:white;
 z-index:500;
 }
 
+#pvpBtn{
+position:absolute;
+top:70px;
+right:20px;
+
+padding:12px 20px;
+
+background:red;
+color:white;
+
+border:none;
+border-radius:15px;
+
+font-size:20px;
+font-weight:bold;
+
+border:3px solid white;
+
+box-shadow:0 0 15px red;
+
+z-index:9999;
+}
+
 #ui{
 position:absolute;
 top:90px;
@@ -232,6 +255,8 @@ display:none;
 
 <div id="nicknameBox"></div>
 
+<button id="pvpBtn">PVP</button>
+
 <div id="ui">
 LEVEL: 1<br>
 KILLS: 0/1
@@ -265,17 +290,15 @@ set,
 onValue
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
-/* FIREBASE */
-
 const firebaseConfig = {
 
-apiKey: "AIzaSyCWI27EmNBuWvZVKcp10hlM1Q6IdB_BU8c",
+apiKey: "ТВОЙ_API_KEY",
 authDomain: "cube-forest-online.firebaseapp.com",
 databaseURL: "https://cube-forest-online-default-rtdb.firebaseio.com",
 projectId: "cube-forest-online",
 storageBucket: "cube-forest-online.appspot.com",
 messagingSenderId: "651385146904",
-appId: "1:651385146904:web:f116175c0e341cc21ffd6d"
+appId: "ТВОЙ_APP_ID"
 
 };
 
@@ -532,6 +555,18 @@ game.appendChild(enemy);
 });
 
 });
+
+/* PVP BUTTON */
+
+document.getElementById("pvpBtn").onclick=function(){
+
+let enemyNick=prompt("ВВЕДИ NICKNAME ИГРОКА");
+
+if(!enemyNick)return;
+
+alert("⚔️ ЗАПРОС НА PVP ОТПРАВЛЕН: "+enemyNick);
+
+};
 
 /* MOBILE */
 
